@@ -80,7 +80,7 @@ Los parámetros y variables que se usan a lo largo del documento son:
   \item[$T$] número de rondas.
   \item[$q_i$] probabilidad de fallo del nodo $i$ en una ronda.
   \item[$A_t$] conjunto de nodos activos en la ronda $t$.
-  \item[$w_{ij}$] peso de la influencia del nodo $j$ sobre el nodo $i$.
+  \item[$w_{ij}$] peso de la influencia del nodo $i$ sobre el nodo $j$.
 \end{description}
 
 \begin{definicion}[Concavidad discreta]
@@ -184,6 +184,8 @@ Salvo que se indique lo contrario:
   discreto, con $u_i(0)=0$.
   \item La función de conjunto $f$ es no negativa, monótona y submodular.
   \item La red no tiene autoaristas y los pesos de influencia son no negativos.
+  El valor $w_{jj}=1$ del caso G2 no representa una arista: es la convención de
+  $f$ según la cual un nodo seleccionado se cubre a sí mismo.
   \item Los nodos y las aristas forman parte de la entrada; las utilidades y
   $f$ se calculan con las fórmulas del Supuesto~\ref{sup:explicito}.
 \end{enumerate}
@@ -404,20 +406,49 @@ Fisher, 1978), resultado que se aplica en la etapa del algoritmo aproximado.
 \section{Instancia concreta y solución base (caso G2)}
 %=====================================================================
 
-El repositorio incluye una solución base que resuelve el Problema~\ref{prob:reparto}
-y el Problema~\ref{prob:seleccion} con las restricciones del caso entregado
-(cupo $k$ y presupuesto de participación $C$ simultáneos), en $T$ rondas. El
-caso fija $N=15$, $T=3$, $k=5$, $B=30$, $C=24$ y $P_i=18$. Como el caso no
-define las funciones de utilidad, se adoptaron las del
-Supuesto~\ref{sup:explicito}, con $a_i$ el coeficiente de utilidad del nodo $i$,
-$J=V$ (por lo que $m=N$), $\beta_j=a_j$ y $w_{ij}$ el peso de influencia del
-grafo (simétrico), con $w_{jj}=1$. Sus propiedades se demuestran en la
-Proposición~\ref{prop:propiedades}.
-En cada ronda, la solución base elige $S_t$ con el voraz (el mejor entre el
-voraz por ganancia marginal y el voraz por razón ganancia/costo, sujetos a
-$|S_t|\le k$ y $\sum_{i\in S_t}c_i\le C$), reparte $B$ unidades con el voraz de
-montículo respetando el tope restante $P_i-\sum_{s<t}x_i^s$, y verifica todas las
-restricciones. Los detalles de ejecución, formatos y limitaciones se
+El caso entregado exige cupo y presupuesto de participación a la vez, en $T$
+rondas y sin fallos. Es una instancia del Problema~\ref{prob:integrado} con
+$A_t=V$, $f_t=f$, $u_i^t=u_i$, $k_t=k$, $C_t=C$ y $B_t=B$, y con utilidades que
+dependen solo de $x_i^t$.
+
+\begin{problema}\label{prob:caso} Selección y reparto del caso G2
+
+\textbf{Entrada.} Enteros $N$, $T$, $k$, $B$ y $C$; para cada nodo $i\in V$, un
+coeficiente $a_i\ge0$, un costo $c_i>0$ y un presupuesto total $P_i$; y pesos de
+influencia $w_{ij}=w_{ji}\in[0,1]$ del grafo, con $w_{jj}=1$. Las funciones $u_i$
+y $f$ son las del Supuesto~\ref{sup:explicito}, con $J=V$ y $\beta_j=a_j$. Como
+el caso no define estas funciones, su forma es una decisión de modelado.
+
+\textbf{Salida.} Para cada ronda $t$, un conjunto $S_t\subseteq V$ y una
+asignación $x^t=(x_i^t)_{i\in S_t}\in\Z_{\ge0}^{S_t}$.
+
+\textbf{Factibilidad.} Para cada ronda $t$ y cada nodo $i\in V$,
+\[
+  |S_t|\le k,
+  \qquad
+  \sum_{i\in S_t}c_i\le C,
+  \qquad
+  \sum_{i\in S_t}x_i^t\le B,
+  \qquad
+  \sum_{t\,:\,i\in S_t}x_i^t\le P_i.
+\]
+
+\textbf{Objetivo.} Maximizar
+\[
+  \sum_{t=1}^{T}\Bigl(f(S_t)+\sum_{i\in S_t}u_i(x_i^t)\Bigr).
+\]
+
+\textbf{Tamaño de la entrada.} $n=N$, con $m=N$ según la
+Observación~\ref{obs:representacion}; $T$, $k$, $B$ y $C$ se reportan aparte. El
+caso entregado fija $N=15$, $T=3$, $k=5$, $B=30$, $C=24$ y $P_i=18$, y su grafo
+tiene $|E|=105$ aristas.
+\end{problema}
+
+En cada ronda, la solución base del repositorio elige $S_t$ con el voraz (el
+mejor entre el voraz por ganancia marginal y el voraz por razón ganancia/costo,
+sujetos a $|S_t|\le k$ y $\sum_{i\in S_t}c_i\le C$), reparte $B$ unidades con el
+voraz de montículo respetando el tope restante $P_i-\sum_{s<t}x_i^s$, y verifica
+todas las restricciones. Los detalles de ejecución, formatos y limitaciones se
 encuentran en \texttt{doc/Manual\_tecnico.md}.
 
 \begin{observacion}[Alcance de la solución base]
@@ -425,7 +456,9 @@ No se modelan fallos de nodos (el caso no trae probabilidades $q_i$), y las
 interacciones de red intervienen en la selección a través de $f$ pero no en el
 reparto. Con costos de participación distintos, la cota $(1-1/e)$ no aplica
 directamente (véase la Variante~\ref{prob:costos}); la comparación con el óptimo
-exacto que reporta el código es solo referencial.
+exacto que reporta el código es solo referencial. Además, la solución base decide
+ronda por ronda, así que no garantiza el óptimo del objetivo acumulado del
+Problema~\ref{prob:caso}.
 \end{observacion}
 
 %=====================================================================
@@ -592,7 +625,7 @@ Una forma concreta y tratable de modelar la influencia es
   =
   v_i(x_i)
   +
-  \sum_{j\in N(i)} w_{ij}\,g_{ij}(x_j),
+  \sum_{j\in N(i)} w_{ji}\,g_{ij}(x_j),
 \]
 donde $v_i:\Z_{\ge0}\to\R_{\ge0}$ y $g_{ij}:\Z_{\ge0}\to\R_{\ge0}$ son
 crecientes y cóncavas en sentido discreto, $v_i(0)=0$ y $g_{ij}(0)=0$. En este
@@ -600,7 +633,7 @@ caso, la utilidad total es
 \[
   \sum_{i\in V} v_i(x_i)
   +
-  \sum_{\{i,j\}\in E} \bigl(w_{ij}\,g_{ij}(x_j)+w_{ji}\,g_{ji}(x_i)\bigr),
+  \sum_{\{i,j\}\in E} \bigl(w_{ji}\,g_{ij}(x_j)+w_{ij}\,g_{ji}(x_i)\bigr),
 \]
 que sigue siendo una suma de funciones cóncavas y por lo tanto conserva la
 concavidad del problema de asignación.
@@ -622,7 +655,7 @@ instancia concreta; no se hereda automáticamente de las utilidades locales.
 \textbf{Entrada.} Un entero $N\in\N$, un número de rondas $T\in\N$, un grafo
 $G=(V,E)$ con pesos $w_{ij}\ge0$, un proceso de fallos $(A_t)_{t=1}^{T}$ con
 probabilidades $q_i$, presupuestos por ronda $B_t$, presupuestos totales por
-nodo $P_i$, cupos $k_t$ (o costos $c_i$ y presupuestos $C_t$), y para cada
+nodo $P_i$, cupos $k_t$, costos $c_i$, presupuestos de participación $C_t$, y para cada
 ronda $t$ funciones $f_t:2^V\to\R_{\ge0}$ monótonas y submodulares y utilidades
 $u_i^t$ crecientes y cóncavas.
 
@@ -633,8 +666,9 @@ elige $S_t\subseteq A_t$ y una asignación $x_t=(x_i^t)_{i\in S_t}$.
 \[
   S_t\subseteq A_t,
   \qquad
-  |S_t|\le k_t
-  \quad\text{(o bien }\textstyle\sum_{i\in S_t}c_i\le C_t\text{)},
+  |S_t|\le k_t,
+  \qquad
+  \sum_{i\in S_t}c_i\le C_t,
 \]
 \[
   \sum_{i\in S_t} x_i^t\le B_t,
@@ -674,7 +708,9 @@ elección debe quedar explícita en el informe.
 El Problema~\ref{prob:reparto} se obtiene del Problema~\ref{prob:integrado}
 fijando $T=1$, sin fallos, sin red, y fijando previamente el conjunto de nodos
 participantes. El Problema~\ref{prob:seleccion} se obtiene fijando $T=1$, sin
-fallos, sin red, y sin reparto de presupuesto. Las variantes agregan,
+fallos, sin red, y sin reparto de presupuesto. Cada restricción de selección se
+desactiva con un valor no restrictivo: $k_t=N$ para el cupo y
+$C_t=\sum_{i\in V}c_i$ para los costos. Las variantes agregan,
 respectivamente, costos de participación, múltiples rondas con fallos e
 interacciones de red.
 \end{observacion}
@@ -700,6 +736,12 @@ $N$ &
 $N,k,f$ &
 $S\subseteq V,\ |S|=k$ &
 $\max f(S)$ \\
+\addlinespace
+\ref{prob:caso} Caso G2 &
+$N$ &
+$N,T,k,B,C,$ $a_i,c_i,P_i,$ $w_{ij}$ &
+$(S_t,x^t)_{t=1}^{T}$ &
+$\max\sum_t\bigl(f(S_t)+\sum_{i\in S_t}u_i(x_i^t)\bigr)$ \\
 \addlinespace
 \ref{prob:costos} Costos &
 $N$ &
