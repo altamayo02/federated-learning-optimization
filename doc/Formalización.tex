@@ -1,0 +1,594 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{graphicx} % Required for inserting images
+\usepackage{authblk}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue}
+
+\theoremstyle{definition}
+\newtheorem{definicion}{Definición}[section]
+\newtheorem{problema}[definicion]{Problema}
+\newtheorem{supuesto}[definicion]{Supuesto}
+\newtheorem{observacion}[definicion]{Observación}
+\newtheorem{ejemplo}[definicion]{Ejemplo}
+
+\theoremstyle{plain}
+\newtheorem{proposicion}[definicion]{Proposición}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\title{Optimización del Proceso de Aprendizaje Federado}
+\author{Alejandro Martínez Orozco y Jon Henry Vásquez Mesa}
+
+\affil{Análisis y Diseño de Algoritmos}
+\affil{Universidad de Caldas}
+
+\date{6 de noviembre de 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Este documento formaliza los problemas de \textbf{distribución de presupuesto} y \textbf{selección de participantes} en el contexto del entrenamiento de un modelo de IA de manera federada: diferentes nodos computacionales son propietarios de datos, los cuales contribuyen simultáneamente al entrenamiento del modelo. El matiz del problema a tratar surge cuando se considera la \textbf{privacidad de los datos} utilizados para el entrenamiento; con el fin de procurar su preservación, se añade ruido a los datos, el cual implica una \textbf{delegación de presupuesto} a cada nodo de tal manera que los datos en general se mantengan útiles para el aprendizaje.
+
+Se definen matemáticamente los problemas de \textbf{distribución óptima del presupuesto de introducción de ruido} y la \textbf{selección óptima de nodos participantes} en cada etapa de entrenamiento, además de algunas variantes para ambos. Cada algoritmo se formaliza con: una \textbf{entrada de datos} y su \textbf{tamaño} correspondiente, una \textbf{salida de datos} y su \textbf{objetivo principal}. El documento no incluye todavía algoritmos ni código, puesto que su propósito es fijar el modelo, la notación y las decisiones de modelado que afectarán el análisis de complejidad posterior.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+%=====================================================================
+\section{Notación y convenciones}
+%=====================================================================
+
+\subsection{Conjuntos, parámetros y variables}
+
+Sea $V=\{1,\dots,N\}$ el conjunto de nodos de la red. Para un subconjunto
+$S\subseteq V$ se escribe $x_S=(x_i)_{i\in S}$. Si $G=(V,E)$ es un grafo, se
+denota por $N(i)=\{j\in V:\{i,j\}\in E\}$ al conjunto de vecinos del nodo $i$.
+
+Los parámetros y variables que se usan a lo largo del documento son:
+
+\begin{description}[leftmargin=*,style=nextline]
+  \item[$N$] número de nodos de la red.
+  \item[$B$] presupuesto total de ruido a repartir en una ronda, en unidades
+  enteras.
+  \item[$B_t$] presupuesto disponible en la ronda $t$.
+  \item[$P_i$] presupuesto total del nodo $i$ a lo largo de todas las rondas.
+  \item[$x_i$] unidades de presupuesto asignadas al nodo $i$.
+  \item[$k$] número máximo de nodos que pueden seleccionarse en una ronda.
+  \item[$c_i$] costo de participación del nodo $i$.
+  \item[$C$] presupuesto de participación disponible.
+  \item[$T$] número de rondas.
+  \item[$q_i$] probabilidad de fallo del nodo $i$ en una ronda.
+  \item[$A_t$] conjunto de nodos activos en la ronda $t$.
+  \item[$w_{ij}$] peso de la influencia del nodo $j$ sobre el nodo $i$.
+\end{description}
+
+\begin{definicion}[Concavidad discreta]
+Una función $u:\Z_{\ge0}\to\R$ es \emph{creciente} si
+$u(j+1)\ge u(j)$ para todo $j\ge0$, y es \emph{cóncava en sentido discreto}
+si sus ganancias marginales
+\[
+  \Delta(j)=u(j)-u(j-1),\qquad j\ge1,
+\]
+son no crecientes. Se adopta la normalización $u(0)=0$.
+\end{definicion}
+
+\begin{definicion}[Funciones de conjunto monótonas y submodulares]
+Sea $f:2^V\to\R_{\ge0}$. Se dice que $f$ es \emph{monótona} si
+$A\subseteq B\subseteq V$ implica $f(A)\le f(B)$. Se dice que $f$ es
+\emph{submodular} si para todo $A\subseteq B\subseteq V$ y todo
+$i\in V\setminus B$ se cumple
+\[
+  f(A\cup\{i\})-f(A)\;\ge\; f(B\cup\{i\})-f(B).
+\]
+Equivalentemente, agregar un nodo a un conjunto grande aporta una ganancia
+marginal menor o igual que agregarlo a uno pequeño.
+\end{definicion}
+
+\subsection{Tamaño de la entrada de datos}
+
+\begin{definicion}[Tamaño de entrada $n$ según variaciones]\label{def:n}
+Para los Problemas~\ref{prob:reparto} y~\ref{prob:seleccion} y para las
+Variantes~\ref{prob:costos} y~\ref{prob:rondas}, se define $n=N$. Para la
+Variante~\ref{prob:red} y para el Problema~\ref{prob:integrado}, se define
+$n=N+|E|$. Los parámetros $B$, $k$, $C$, $T$ y las probabilidades $q_i$ se
+reportan por separado como parámetros de la instancia. Cuando la codificación
+de un parámetro numérico afecte la complejidad, se indicará explícitamente si
+se usa representación unaria o binaria.
+\end{definicion}
+
+En otras palabras, lo que crece cuando la instancia se hace más grande es el
+número de nodos $N$ y, en las variantes con red, también el número de aristas
+$|E|$. Los parámetros numéricos se mantienen fijos o se reportan aparte.
+
+\subsection{Modelo de acceso a la entrada}
+
+\begin{supuesto}[Acceso por oráculo]\label{sup:oraculo}
+Las funciones de utilidad $u_i$ se representan mediante un oráculo que
+devuelve $u_i(j)$ o su ganancia marginal $\Delta_i(j)$ en tiempo $O(1)$. La
+función de conjunto $f$ se representa mediante un oráculo que devuelve $f(S)$
+en tiempo $O(1)$ para cualquier $S\subseteq V$. El costo de las consultas al
+oráculo se contabiliza en la función de eficiencia del algoritmo.
+\end{supuesto}
+
+\begin{observacion}[Representación explícita]
+\label{obs:representacion}
+Si las utilidades se entregaran como una tabla con las $B$ ganancias
+marginales de cada nodo, la entrada tendría $\Theta(NB)$ números. Si $f$ se
+entregara de forma explícita, su descripción podría tener tamaño exponencial en
+$N$. El modelo de oráculo del Supuesto~\ref{sup:oraculo} es el que se adopta en
+este documento y es el que permite que $n=N$ (o $n=N+|E|$) sea una medida
+combinatoria significativa del tamaño de la instancia.
+\end{observacion}
+
+\subsection{Supuestos generales}
+
+\begin{supuesto}[Supuestos del modelo]\label{sup:modelo}
+Salvo que se indique lo contrario:
+\begin{enumerate}[leftmargin=*,label=\arabic*)]
+  \item Los presupuestos se miden en unidades enteras no negativas.
+  \item Las utilidades son no negativas, crecientes y cóncavas en sentido
+  discreto, con $u_i(0)=0$.
+  \item La función de conjunto $f$ es no negativa, monótona y submodular.
+  \item La red no tiene autoaristas y los pesos de influencia son no negativos.
+  \item Los nodos y las aristas forman parte de la entrada; las utilidades y
+  $f$ se acceden por oráculo.
+\end{enumerate}
+\end{supuesto}
+
+%=====================================================================
+\section{Problema 1: reparto óptimo del presupuesto}
+%=====================================================================
+
+\begin{problema}\label{prob:reparto} Reparto óptimo del presupuesto
+
+\textbf{Entrada.} Un entero $N\in\N$, un presupuesto $B\in\Z_{\ge0}$ y, para
+cada nodo $i\in V$, una función de utilidad $u_i:\Z_{\ge0}\to\R_{\ge0}$
+creciente y cóncava en sentido discreto, con $u_i(0)=0$, accesible por oráculo
+según el Supuesto~\ref{sup:oraculo}.
+
+\textbf{Salida.} Un vector de asignación
+$x=(x_1,\dots,x_N)\in\Z_{\ge0}^N$.
+
+\textbf{Factibilidad.} $\sum_{i=1}^{N} x_i\le B$.
+
+\textbf{Objetivo.} Maximizar la utilidad total
+\[
+  \sum_{i=1}^{N} u_i(x_i).
+\]
+
+\textbf{Tamaño de la entrada.} $n=N$, de acuerdo con la
+Definición~\ref{def:n}. El presupuesto $B$ se reporta como parámetro adicional.
+\end{problema}
+
+\begin{observacion}[Uso completo del presupuesto]
+Como las funciones $u_i$ son no decrecientes, toda solución factible con
+$\sum_i x_i<B$ puede completarse asignando las unidades restantes a cualquier
+nodo sin disminuir la utilidad total. Por lo tanto, sin pérdida de
+generalidad, puede exigirse $\sum_i x_i=B$.
+\end{observacion}
+
+\begin{observacion}[Codificación de $B$ y complejidad]
+El algoritmo voraz que se estudiará más adelante asigna una unidad de
+presupuesto a la vez y tiene costo $O(B\log N)$ usando una cola de prioridad.
+Este costo es polinomial en $B$ y en $N$. Si $B$ se codificara en binario, el
+algoritmo sería pseudo-polinomial en el tamaño de la representación de $B$. El
+enunciado del curso adopta el parámetro $B$ como parte de la instancia y
+reporta la complejidad como $T(N,B)=O(B\log N)$; esta distinción se deja
+explícita para que la definición de $n$ no sea ambigua.
+\end{observacion}
+
+%=====================================================================
+\section{Problema 2: selección de nodos}
+%=====================================================================
+
+\begin{problema}\label{prob:seleccion} Selección con cupo fijo
+
+\textbf{Entrada.} Un entero $N\in\N$, un entero $k$ con $0\le k\le N$ y una
+función de conjunto $f:2^V\to\R_{\ge0}$ monótona y submodular, accesible por
+oráculo según el Supuesto~\ref{sup:oraculo}.
+
+\textbf{Salida.} Un subconjunto $S\subseteq V$ con $|S|=k$.
+
+\textbf{Objetivo.} Maximizar $f(S)$.
+
+\textbf{Tamaño de la entrada.} $n=N$, de acuerdo con la
+Definición~\ref{def:n}. El cupo $k$ se reporta como parámetro adicional.
+\end{problema}
+
+\begin{observacion}[Casos límite]
+Si $k=0$, la única solución factible es $S=\emptyset$ y el problema es trivial.
+Si $k>N$, no existe solución factible; en ese caso la instancia se declara
+infactible. Si $k=N$, la única solución es $S=V$.
+\end{observacion}
+
+\begin{observacion}[Relación con la Parte 1]
+El Problema~\ref{prob:seleccion} no incluye el reparto del presupuesto: una vez
+elegido $S$, la asignación $\{x_i\}_{i\in S}$ se resolvería con el
+Problema~\ref{prob:reparto}. Los dos problemas se combinan en el
+Problema~\ref{prob:integrado}.
+\end{observacion}
+
+%=====================================================================
+\section{Variante 1: costos de participación}
+%=====================================================================
+
+\begin{problema}\label{prob:costos} Selección con costos y presupuesto
+
+\textbf{Entrada.} Un entero $N\in\N$, un costo $c_i>0$ para cada $i\in V$, un
+presupuesto de participación $C\in\Z_{\ge0}$ y una función de conjunto
+$f:2^V\to\R_{\ge0}$ monótona y submodular, accesible por oráculo.
+
+\textbf{Salida.} Un subconjunto $S\subseteq V$.
+
+\textbf{Factibilidad.} $\sum_{i\in S} c_i\le C$.
+
+\textbf{Objetivo.} Maximizar $f(S)$.
+
+\textbf{Tamaño de la entrada.} $n=N$, de acuerdo con la
+Definición~\ref{def:n}. Los costos $c_i$ forman parte de la entrada y $C$ se
+reporta como parámetro adicional.
+\end{problema}
+
+\begin{observacion}[El caso base es un caso particular]
+Si $c_i=1$ para todo $i\in V$ y $C=k$, la restricción
+$\sum_{i\in S} c_i\le C$ equivale a $|S|\le k$. Como $f$ es monótona, toda
+solución óptima puede extenderse hasta tener exactamente $k$ elementos (si
+$k\le N$), recuperándose el Problema~\ref{prob:seleccion}.
+\end{observacion}
+
+\begin{observacion}[Cota de aproximación]
+La cota clásica $(1-1/e)$ para el algoritmo voraz del Problema~\ref{prob:seleccion}
+no se aplica directamente a esta variante. La versión correcta para cobertura
+con presupuesto (\emph{budgeted maximum coverage}) debe citarse o demostrarse
+en la etapa correspondiente del proyecto.
+\end{observacion}
+
+%=====================================================================
+\section{Variante 2: $T$ rondas con fallos}
+%=====================================================================
+
+\subsection{Proceso de fallos}
+
+\begin{definicion}[Proceso de fallos]
+Sea $(\Omega,\mathcal{F},\Pr)$ un espacio de probabilidad y sea
+$(\mathcal{F}_t)_{t=0}^{T}$ una filtración. Un \emph{proceso de fallos} es una
+sucesión de conjuntos activos $(A_t)_{t=1}^{T}$ tal que $A_t\in\mathcal{F}_t$ y
+$A_t\subseteq V$ para cada $t$. Se consideran dos instancias:
+\begin{enumerate}[leftmargin=*,label=\roman*)]
+  \item \emph{Fallos independientes por ronda:}
+  $A_t=\{i\in V: F_{i,t}=0\}$, donde
+  $F_{i,t}\sim\mathrm{Bernoulli}(q_i)$ son independientes para todo $i$ y $t$.
+  \item \emph{Fallos absorbentes:} $A_0=V$ y
+  $A_t=A_{t-1}\setminus\{i\in A_{t-1}: F_{i,t}=1\}$, de modo que un nodo que
+  falla no vuelve a estar activo.
+\end{enumerate}
+\end{definicion}
+
+\subsection{Problema con rondas}
+
+\begin{problema}\label{prob:rondas} Selección y asignación en $T$ rondas con fallos
+
+\textbf{Entrada.} Un entero $N\in\N$, un número de rondas $T\in\N$, un proceso
+de fallos $(A_t)_{t=1}^{T}$ con probabilidades $q_i$, presupuestos por ronda
+$B_t\in\Z_{\ge0}$, presupuestos totales por nodo $P_i\in\Z_{\ge0}$, y para cada
+ronda $t$ una función de conjunto $f_t:2^V\to\R_{\ge0}$ monótona y submodular y
+utilidades $u_i^t:\Z_{\ge0}\to\R_{\ge0}$ crecientes y cóncavas.
+
+\textbf{Decisión.} Una política $\pi=(\pi_1,\dots,\pi_T)$. En la ronda $t$, la
+política observa el historial
+\[
+  H_{t-1}=\sigma\bigl(A_1,S_1,x_1,\dots,A_{t-1},S_{t-1},x_{t-1}\bigr)
+\]
+y el conjunto activo $A_t$, y elige
+\[
+  (S_t,x_t)=\pi_t(H_{t-1},A_t),
+\]
+donde $S_t\subseteq A_t$ y $x_t=(x_i^t)_{i\in S_t}\in\Z_{\ge0}^{S_t}$.
+
+\textbf{Factibilidad.} Para cada ronda $t$,
+\[
+  \sum_{i\in S_t} x_i^t\le B_t,
+  \qquad
+  \sum_{t=1}^{T} x_i^t\le P_i\quad\text{para todo }i\in V.
+\]
+
+\textbf{Salida.} Una política factible $\pi$.
+
+\textbf{Objetivo.} Maximizar la utilidad total esperada
+\[
+  \max_{\pi}\;
+  \mathbb{E}\left[
+    \sum_{t=1}^{T}
+    \left(
+      f_t(S_t)+\sum_{i\in S_t} u_i^t(x_i^t)
+    \right)
+  \right].
+\]
+
+\textbf{Tamaño de la entrada.} $n=N$, de acuerdo con la
+Definición~\ref{def:n}. El número de rondas $T$ se reporta como parámetro
+adicional.
+\end{problema}
+
+\begin{observacion}[Momento de la decisión]
+Se supone que el conjunto activo $A_t$ se observa antes de elegir $S_t$. Si los
+fallos ocurrieran después de la decisión, la política debería ser no
+anticipativa respecto de $A_t$ y el modelo cambiaría. Esta convención debe
+confirmarse con el enunciado del curso.
+\end{observacion}
+
+\begin{observacion}[Esperanza versus peor caso]
+El objetivo del Problema~\ref{prob:rondas} es la utilidad esperada. Una
+alternativa es optimizar el peor caso sobre las trayectorias de fallos. Ambas
+versiones son válidas como formalización, pero producen análisis de
+aproximación distintos; la elección debe quedar explícita.
+\end{observacion}
+
+\begin{observacion}[Caso estático]
+Si $T=1$ y $A_1=V$, el Problema~\ref{prob:rondas} se reduce a la combinación
+de una selección con cupo o costo y un reparto de presupuesto en una sola
+ronda.
+\end{observacion}
+
+%=====================================================================
+\section{Variante 3: interacciones en la red}
+%=====================================================================
+
+\subsection{Modelo general}
+
+\begin{problema}\label{prob:red} Reparto con externalidades de red
+
+\textbf{Entrada.} Un entero $N\in\N$, un grafo no dirigido $G=(V,E)$ y pesos de
+influencia $w_{ij}\ge0$ para cada par ordenado $(i,j)$ con $\{i,j\}\in E$, un
+presupuesto $B\in\Z_{\ge0}$ y, para cada nodo $i\in V$, una función de utilidad
+\[
+  u_i:\Z_{\ge0}^{1+|N(i)|}\to\R_{\ge0},
+  \qquad
+  u_i(x_i,x_{N(i)}),
+\]
+creciente y cóncava en cada una de sus coordenadas, con $u_i(0,\dots,0)=0$.
+
+\textbf{Salida.} Un vector de asignación
+$x=(x_1,\dots,x_N)\in\Z_{\ge0}^N$.
+
+\textbf{Factibilidad.} $\sum_{i=1}^{N} x_i\le B$.
+
+\textbf{Objetivo.} Maximizar la utilidad total de la red
+\[
+  \sum_{i=1}^{N} u_i(x_i,x_{N(i)}).
+\]
+
+\textbf{Tamaño de la entrada.} $n=N+|E|$, de acuerdo con la
+Definición~\ref{def:n}. El presupuesto $B$ se reporta como parámetro adicional.
+\end{problema}
+
+\subsection{Instancia separable}
+
+\begin{ejemplo}[Externalidades separables]\label{ej:red}
+Una forma concreta y tratable de modelar la influencia es
+\[
+  u_i(x_i,x_{N(i)})
+  =
+  v_i(x_i)
+  +
+  \sum_{j\in N(i)} w_{ij}\,g_{ij}(x_j),
+\]
+donde $v_i:\Z_{\ge0}\to\R_{\ge0}$ y $g_{ij}:\Z_{\ge0}\to\R_{\ge0}$ son
+crecientes y cóncavas en sentido discreto, $v_i(0)=0$ y $g_{ij}(0)=0$. En este
+caso, la utilidad total es
+\[
+  \sum_{i\in V} v_i(x_i)
+  +
+  \sum_{\{i,j\}\in E} \bigl(w_{ij}\,g_{ij}(x_j)+w_{ji}\,g_{ji}(x_i)\bigr),
+\]
+que sigue siendo una suma de funciones cóncavas y por lo tanto conserva la
+concavidad del problema de asignación.
+\end{ejemplo}
+
+\begin{observacion}[Efecto sobre la selección]
+Si la utilidad de seleccionar un nodo depende de los vecinos seleccionados,
+la función de conjunto resultante $f_G(S)$ no es necesariamente submodular.
+La submodularidad debe imponerse como hipótesis o demostrarse para la
+instancia concreta; no se hereda automáticamente de las utilidades locales.
+\end{observacion}
+
+%=====================================================================
+\section{Problema integrado}
+%=====================================================================
+
+\begin{problema}\label{prob:integrado} Problema integrado
+
+\textbf{Entrada.} Un entero $N\in\N$, un número de rondas $T\in\N$, un grafo
+$G=(V,E)$ con pesos $w_{ij}\ge0$, un proceso de fallos $(A_t)_{t=1}^{T}$ con
+probabilidades $q_i$, presupuestos por ronda $B_t$, presupuestos totales por
+nodo $P_i$, cupos $k_t$ (o costos $c_i$ y presupuestos $C_t$), y para cada
+ronda $t$ funciones $f_t:2^V\to\R_{\ge0}$ monótonas y submodulares y utilidades
+$u_i^t$ crecientes y cóncavas.
+
+\textbf{Decisión.} Una política $\pi=(\pi_1,\dots,\pi_T)$ que en cada ronda
+elige $S_t\subseteq A_t$ y una asignación $x_t=(x_i^t)_{i\in S_t}$.
+
+\textbf{Factibilidad.} Para cada ronda $t$:
+\[
+  S_t\subseteq A_t,
+  \qquad
+  |S_t|\le k_t
+  \quad\text{(o bien }\textstyle\sum_{i\in S_t}c_i\le C_t\text{)},
+\]
+\[
+  \sum_{i\in S_t} x_i^t\le B_t,
+  \qquad
+  \sum_{t=1}^{T} x_i^t\le P_i\quad\text{para todo }i\in V.
+\]
+
+\textbf{Salida.} Una política factible $\pi$.
+
+\textbf{Objetivo.} Maximizar
+\[
+  \max_{\pi}\;
+  \mathbb{E}\left[
+    \sum_{t=1}^{T}
+    \left(
+      f_t(S_t)
+      +
+      \sum_{i\in S_t} u_i^t\bigl(x_i^t,x_{N(i)}^t\bigr)
+    \right)
+  \right].
+\]
+
+\textbf{Tamaño de la entrada.} $n=N+|E|$, de acuerdo con la
+Definición~\ref{def:n}. Los parámetros $T$, $B_t$, $P_i$, $k_t$ y $C_t$ se
+reportan por separado.
+\end{problema}
+
+\begin{observacion}[Alcance de las externalidades]
+En el objetivo del Problema~\ref{prob:integrado} se contabiliza la utilidad de
+los nodos seleccionados. Si se desea que el presupuesto asignado a un nodo
+afecte también la utilidad de vecinos no seleccionados, se puede reemplazar el
+índice $i\in S_t$ por $i\in A_t$ y definir $x_i^t=0$ para $i\notin S_t$. Esta
+elección debe quedar explícita en el informe.
+\end{observacion}
+
+\begin{observacion}[Los problemas anteriores son subproblemas]
+El Problema~\ref{prob:reparto} se obtiene del Problema~\ref{prob:integrado}
+fijando $T=1$, sin fallos, sin red, y fijando previamente el conjunto de nodos
+participantes. El Problema~\ref{prob:seleccion} se obtiene fijando $T=1$, sin
+fallos, sin red, y sin reparto de presupuesto. Las variantes agregan,
+respectivamente, costos de participación, múltiples rondas con fallos e
+interacciones de red.
+\end{observacion}
+
+\subsection{Resumen}
+
+\begin{table}[htbp]
+\centering
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}p{1.7cm}X X X@{}}
+\toprule
+Problema & $n$ & Entrada & Salida & Objetivo \\
+\midrule
+\ref{prob:reparto} Reparto &
+$N$ &
+$N,B,u_i$ &
+$x\in\Z_{\ge0}^N$ &
+$\max\sum_i u_i(x_i)$ \\
+\addlinespace
+\ref{prob:seleccion} Selección &
+$N$ &
+$N,k,f$ &
+$S\subseteq V,\ |S|=k$ &
+$\max f(S)$ \\
+\addlinespace
+\ref{prob:costos} Costos &
+$N$ &
+$N,c_i,C,f$ &
+$S\subseteq V$ &
+$\max f(S)$ s.t. $\sum_{i\in S}c_i\le C$ \\
+\addlinespace
+\ref{prob:rondas} Rondas &
+$N$ &
+$N,T,q_i,B_t,P_i,f_t,u_i^t$ &
+política $\pi$ &
+$\max_\pi\mathbb{E}\bigl[\sum_t f_t(S_t)+\sum_{i\in S_t}u_i^t(x_i^t)\bigr]$ \\
+\addlinespace
+\ref{prob:red} Red &
+$N+|E|$ &
+$N,G,w_{ij},B,u_i$ &
+$x\in\Z_{\ge0}^N$ &
+$\max\sum_i u_i(x_i,x_{N(i)})$ \\
+\addlinespace
+\ref{prob:integrado} Integrado &
+$N+|E|$ &
+todos los anteriores &
+política $\pi$ &
+$\max_\pi\mathbb{E}\bigl[\sum_t f_t(S_t)+\sum_{i\in S_t}u_i^t(x_i^t,x_{N(i)}^t)\bigr]$ \\
+\bottomrule
+\end{tabularx}
+\caption{Resumen de los problemas formalizados.}
+\label{tab:resumen}
+\end{table}
+
+%=====================================================================
+\section{Supuestos, casos límite y decisiones abiertas}
+%=====================================================================
+
+\subsection{Casos límite}
+
+\begin{itemize}[leftmargin=*,label=$\bullet$]
+  \item $k=0$: la selección es vacía y el Problema~\ref{prob:seleccion} es
+  trivial.
+  \item $k>N$: la instancia del Problema~\ref{prob:seleccion} es infactible.
+  \item $B=0$ o $C=0$: no se asigna presupuesto o no se selecciona ningún nodo,
+  respectivamente.
+  \item $P_i=0$: el nodo $i$ no puede participar en ninguna ronda.
+  \item $N=1$: los problemas de selección son triviales y el reparto asigna
+  todo el presupuesto al único nodo.
+  \item Nodos aislados en la Variante~\ref{prob:red}: $N(i)=\emptyset$ y la
+  utilidad depende solo de $x_i$.
+  \item $q_i=0$: el nodo nunca falla; $q_i=1$: el nodo nunca está activo.
+  \item $T=1$: el Problema~\ref{prob:rondas} se reduce a una sola ronda.
+\end{itemize}
+
+\subsection{Decisiones de modelado por confirmar}
+
+\begin{enumerate}[leftmargin=*,label=\arabic*)]
+  \item \textbf{Unidades de presupuesto.} Se asume que el presupuesto es
+  discreto y se asigna en unidades enteras. Si el presupuesto fuera continuo,
+  el algoritmo voraz cambiaría por un esquema de reparto por umbrales y la
+  función de eficiencia sería distinta.
+  \item \textbf{Representación de las utilidades.} Se adopta el modelo de
+  oráculo del Supuesto~\ref{sup:oraculo}. Si el curso exige una representación
+  explícita, el tamaño de la entrada y la complejidad deben ajustarse según la
+  Observación~\ref{obs:representacion}.
+  \item \textbf{Momento de los fallos.} Se asume que $A_t$ se observa antes de
+  decidir en la ronda $t$. Si los fallos ocurren después, la política debe ser
+  no anticipativa y el análisis cambia.
+  \item \textbf{Objetivo en varias rondas.} Se adopta la utilidad esperada.
+  La alternativa de peor caso debe indicarse explícitamente si se prefiere.
+  \item \textbf{Presupuesto entre rondas.} Se asume que cada nodo tiene un
+  presupuesto total $P_i$ y que el presupuesto no gastado no se transfiere
+  entre nodos. Si se permite transferencia, debe agregarse esa restricción al
+  modelo.
+  \item \textbf{Interacciones de red.} La forma separable del
+  Ejemplo~\ref{ej:red} preserva la concavidad. Si se usa una utilidad general
+  $u_i(x_i,x_{N(i)})$, deben verificarse las hipótesis de concavidad y
+  submodularidad que requiera cada algoritmo.
+\end{enumerate}
+
+%=====================================================================
+\section{Lista de verificación de la rúbrica}
+%=====================================================================
+
+\begin{itemize}[leftmargin=*,label=$\square$]
+  \item Se define con precisión el tamaño de la entrada $n$ para cada problema
+  y se indica qué crece cuando la instancia se hace más grande.
+  \item Cada problema especifica entrada, salida, restricciones de factibilidad
+  y objetivo.
+  \item Se distingue entre los problemas base y las tres variantes obligatorias.
+  \item Se explicita el modelo de acceso a las utilidades y a la función de
+  conjunto.
+  \item Se dejan identificadas las decisiones de modelado que afectan el
+  análisis de complejidad y las cotas de aproximación.
+\end{itemize}
+
+\end{document}
