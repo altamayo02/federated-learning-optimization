@@ -15,4 +15,4 @@ python3 tests/test_red.py                                # pruebas
 Requiere Python 3 y ninguna dependencia (`requirements.txt`).
 Por cada caso escribe `resultados/<caso>_resultado.json` (resultado, tiempo y traza completa) y `resultados/<caso>_traza.txt` (la misma traza en texto legible).
 
-Documentación: `doc/Manual_tecnico.md` (algoritmo, formatos y limitaciones) y `doc/Formalización.tex` (formalización y prueba de NP-dureza).
+Documentación: `doc/Manual_tecnico.md` (algoritmo, formatos y limitaciones) y `doc/Formalización.pdf` (informe: formalización y prueba de NP-dureza; fuente en `doc/Formalización.tex`, compilar con pdfLaTeX).

@@ -1,7 +1,7 @@
 # Manual técnico: solución base G2 · Red
 
 Proyecto semestral de Análisis y Diseño de Algoritmos (2026-2), primera entrega, Grupo 2.
-El manual acompaña al informe (`doc/Formalización.tex`), al código (`src/red.py`) y a las evidencias (`resultados/`). Los cuatro corresponden a la misma versión del repositorio.
+El manual acompaña al informe (`doc/Formalización.pdf`, con su fuente en `doc/Formalización.tex`), al código (`src/red.py`) y a las evidencias (`resultados/`). Los cuatro corresponden a la misma versión del repositorio.
 
 ## Contenido
 1. Propósito y alcance
@@ -172,7 +172,7 @@ src/red.py            solución base (un solo módulo, sin dependencias)
 tests/test_red.py     pruebas automáticas
 data/N15.json         caso de la profesora
 resultados/           resultado.json y traza.txt por caso
-doc/                  informe (.tex) y este manual
+doc/                  informe (.pdf y .tex) y este manual
 ```
 Funciones de `src/red.py`:
 
