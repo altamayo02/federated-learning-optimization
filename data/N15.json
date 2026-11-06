@@ -1,0 +1,628 @@
+{
+  "parametros": {
+    "numero_nodos": 15,
+    "numero_rondas": 3,
+    "cupo_participantes_por_ronda_k": 5,
+    "presupuesto_ruido_por_ronda_B": 30,
+    "presupuesto_costos_participacion_por_ronda": 24
+  },
+  "grafo": [
+      {
+        "u": "N01",
+        "v": "N02",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N01",
+        "v": "N03",
+        "peso_influencia": 0.6
+      },
+      {
+        "u": "N01",
+        "v": "N04",
+        "peso_influencia": 0.3
+      },
+      {
+        "u": "N01",
+        "v": "N05",
+        "peso_influencia": 0.65
+      },
+      {
+        "u": "N01",
+        "v": "N06",
+        "peso_influencia": 0.35
+      },
+      {
+        "u": "N01",
+        "v": "N07",
+        "peso_influencia": 0.7
+      },
+      {
+        "u": "N01",
+        "v": "N08",
+        "peso_influencia": 0.4
+      },
+      {
+        "u": "N01",
+        "v": "N09",
+        "peso_influencia": 0.75
+      },
+      {
+        "u": "N01",
+        "v": "N10",
+        "peso_influencia": 0.45
+      },
+      {
+        "u": "N01",
+        "v": "N11",
+        "peso_influencia": 0.8
+      },
+      {
+        "u": "N01",
+        "v": "N12",
+        "peso_influencia": 0.5
+      },
+      {
+        "u": "N01",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N01",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N01",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N02",
+        "v": "N03",
+        "peso_influencia": 0.6
+      },
+      {
+        "u": "N02",
+        "v": "N04",
+        "peso_influencia": 0.3
+      },
+      {
+        "u": "N02",
+        "v": "N05",
+        "peso_influencia": 0.65
+      },
+      {
+        "u": "N02",
+        "v": "N06",
+        "peso_influencia": 0.35
+      },
+      {
+        "u": "N02",
+        "v": "N07",
+        "peso_influencia": 0.7
+      },
+      {
+        "u": "N02",
+        "v": "N08",
+        "peso_influencia": 0.4
+      },
+      {
+        "u": "N02",
+        "v": "N09",
+        "peso_influencia": 0.75
+      },
+      {
+        "u": "N02",
+        "v": "N10",
+        "peso_influencia": 0.45
+      },
+      {
+        "u": "N02",
+        "v": "N11",
+        "peso_influencia": 0.8
+      },
+      {
+        "u": "N02",
+        "v": "N12",
+        "peso_influencia": 0.5
+      },
+      {
+        "u": "N02",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N02",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N02",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N03",
+        "v": "N04",
+        "peso_influencia": 0.3
+      },
+      {
+        "u": "N03",
+        "v": "N05",
+        "peso_influencia": 0.65
+      },
+      {
+        "u": "N03",
+        "v": "N06",
+        "peso_influencia": 0.35
+      },
+      {
+        "u": "N03",
+        "v": "N07",
+        "peso_influencia": 0.7
+      },
+      {
+        "u": "N03",
+        "v": "N08",
+        "peso_influencia": 0.4
+      },
+      {
+        "u": "N03",
+        "v": "N09",
+        "peso_influencia": 0.75
+      },
+      {
+        "u": "N03",
+        "v": "N10",
+        "peso_influencia": 0.45
+      },
+      {
+        "u": "N03",
+        "v": "N11",
+        "peso_influencia": 0.8
+      },
+      {
+        "u": "N03",
+        "v": "N12",
+        "peso_influencia": 0.5
+      },
+      {
+        "u": "N03",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N03",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N03",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N04",
+        "v": "N05",
+        "peso_influencia": 0.65
+      },
+      {
+        "u": "N04",
+        "v": "N06",
+        "peso_influencia": 0.35
+      },
+      {
+        "u": "N04",
+        "v": "N07",
+        "peso_influencia": 0.7
+      },
+      {
+        "u": "N04",
+        "v": "N08",
+        "peso_influencia": 0.4
+      },
+      {
+        "u": "N04",
+        "v": "N09",
+        "peso_influencia": 0.75
+      },
+      {
+        "u": "N04",
+        "v": "N10",
+        "peso_influencia": 0.45
+      },
+      {
+        "u": "N04",
+        "v": "N11",
+        "peso_influencia": 0.8
+      },
+      {
+        "u": "N04",
+        "v": "N12",
+        "peso_influencia": 0.5
+      },
+      {
+        "u": "N04",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N04",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N04",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N05",
+        "v": "N06",
+        "peso_influencia": 0.35
+      },
+      {
+        "u": "N05",
+        "v": "N07",
+        "peso_influencia": 0.7
+      },
+      {
+        "u": "N05",
+        "v": "N08",
+        "peso_influencia": 0.4
+      },
+      {
+        "u": "N05",
+        "v": "N09",
+        "peso_influencia": 0.75
+      },
+      {
+        "u": "N05",
+        "v": "N10",
+        "peso_influencia": 0.45
+      },
+      {
+        "u": "N05",
+        "v": "N11",
+        "peso_influencia": 0.8
+      },
+      {
+        "u": "N05",
+        "v": "N12",
+        "peso_influencia": 0.5
+      },
+      {
+        "u": "N05",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N05",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N05",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N06",
+        "v": "N07",
+        "peso_influencia": 0.7
+      },
+      {
+        "u": "N06",
+        "v": "N08",
+        "peso_influencia": 0.4
+      },
+      {
+        "u": "N06",
+        "v": "N09",
+        "peso_influencia": 0.75
+      },
+      {
+        "u": "N06",
+        "v": "N10",
+        "peso_influencia": 0.45
+      },
+      {
+        "u": "N06",
+        "v": "N11",
+        "peso_influencia": 0.8
+      },
+      {
+        "u": "N06",
+        "v": "N12",
+        "peso_influencia": 0.5
+      },
+      {
+        "u": "N06",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N06",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N06",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N07",
+        "v": "N08",
+        "peso_influencia": 0.4
+      },
+      {
+        "u": "N07",
+        "v": "N09",
+        "peso_influencia": 0.75
+      },
+      {
+        "u": "N07",
+        "v": "N10",
+        "peso_influencia": 0.45
+      },
+      {
+        "u": "N07",
+        "v": "N11",
+        "peso_influencia": 0.8
+      },
+      {
+        "u": "N07",
+        "v": "N12",
+        "peso_influencia": 0.5
+      },
+      {
+        "u": "N07",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N07",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N07",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N08",
+        "v": "N09",
+        "peso_influencia": 0.75
+      },
+      {
+        "u": "N08",
+        "v": "N10",
+        "peso_influencia": 0.45
+      },
+      {
+        "u": "N08",
+        "v": "N11",
+        "peso_influencia": 0.8
+      },
+      {
+        "u": "N08",
+        "v": "N12",
+        "peso_influencia": 0.5
+      },
+      {
+        "u": "N08",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N08",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N08",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N09",
+        "v": "N10",
+        "peso_influencia": 0.45
+      },
+      {
+        "u": "N09",
+        "v": "N11",
+        "peso_influencia": 0.8
+      },
+      {
+        "u": "N09",
+        "v": "N12",
+        "peso_influencia": 0.5
+      },
+      {
+        "u": "N09",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N09",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N09",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N10",
+        "v": "N11",
+        "peso_influencia": 0.8
+      },
+      {
+        "u": "N10",
+        "v": "N12",
+        "peso_influencia": 0.5
+      },
+      {
+        "u": "N10",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N10",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N10",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N11",
+        "v": "N12",
+        "peso_influencia": 0.5
+      },
+      {
+        "u": "N11",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N11",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N11",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N12",
+        "v": "N13",
+        "peso_influencia": 0.2
+      },
+      {
+        "u": "N12",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N12",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N13",
+        "v": "N14",
+        "peso_influencia": 0.55
+      },
+      {
+        "u": "N13",
+        "v": "N15",
+        "peso_influencia": 0.25
+      },
+      {
+        "u": "N14",
+        "v": "N15",
+        "peso_influencia": 0.25
+      }
+    ],
+  "nodos": [
+    {
+      "id": "N01",
+      "coeficiente_utilidad": 8.5,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 3
+    },
+    {
+      "id": "N02",
+      "coeficiente_utilidad": 10.2,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 5
+    },
+    {
+      "id": "N03",
+      "coeficiente_utilidad": 9.1,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 4
+    },
+    {
+      "id": "N04",
+      "coeficiente_utilidad": 12.0,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 6
+    },
+    {
+      "id": "N05",
+      "coeficiente_utilidad": 7.8,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 2
+    },
+    {
+      "id": "N06",
+      "coeficiente_utilidad": 11.1,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 7
+    },
+    {
+      "id": "N07",
+      "coeficiente_utilidad": 8.9,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 4
+    },
+    {
+      "id": "N08",
+      "coeficiente_utilidad": 10.6,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 5
+    },
+    {
+      "id": "N09",
+      "coeficiente_utilidad": 9.9,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 3
+    },
+    {
+      "id": "N10",
+      "coeficiente_utilidad": 12.4,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 6
+    },
+    {
+      "id": "N11",
+      "coeficiente_utilidad": 7.6,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 4
+    },
+    {
+      "id": "N12",
+      "coeficiente_utilidad": 11.8,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 5
+    },
+    {
+      "id": "N13",
+      "coeficiente_utilidad": 8.3,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 7
+    },
+    {
+      "id": "N14",
+      "coeficiente_utilidad": 10.1,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 3
+    },
+    {
+      "id": "N15",
+      "coeficiente_utilidad": 9.5,
+      "presupuesto_total_nodo": 18,
+      "costo_participacion": 6
+    }
+  ]
+}
