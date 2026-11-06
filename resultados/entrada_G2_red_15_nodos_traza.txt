@@ -1,4 +1,4 @@
-=== Caso: entrada_G2_red_15_nodos | tiempo: 0.000893 s | utilidad total: 699.477241 ===
+=== Caso: entrada_G2_red_15_nodos | tiempo: 0.000947 s | utilidad total: 699.477241 ===
 
 -- Ronda 1 (selección: voraz por 'ganancia') --
 Nodos: N11, N14, N09, N15, N13   f(S)=145.5795
@@ -14,7 +14,6 @@ Reparto: N11=5, N14=7, N09=7, N15=6, N13=5   utilidad=88.5640
   [OK] sum c_i <= C (23 <= 24)
   [OK] sum x_i <= B (30 <= 30)
   [OK] x_i <= presupuesto restante del nodo
-  [OK] x_i enteros >= 0
   [OK] f(S_voraz) >= (1-1/e) f(S_opt) (referencial: con costos la cota no aplica)
 
 -- Ronda 2 (selección: voraz por 'ganancia') --
@@ -31,7 +30,6 @@ Reparto: N11=5, N14=7, N09=7, N15=6, N13=5   utilidad=88.5640
   [OK] sum c_i <= C (23 <= 24)
   [OK] sum x_i <= B (30 <= 30)
   [OK] x_i <= presupuesto restante del nodo
-  [OK] x_i enteros >= 0
   [OK] f(S_voraz) >= (1-1/e) f(S_opt) (referencial: con costos la cota no aplica)
 
 -- Ronda 3 (selección: voraz por 'ganancia') --
@@ -48,5 +46,4 @@ Reparto: N11=8, N14=4, N09=4, N15=6, N13=8   utilidad=85.6108
   [OK] sum c_i <= C (23 <= 24)
   [OK] sum x_i <= B (30 <= 30)
   [OK] x_i <= presupuesto restante del nodo
-  [OK] x_i enteros >= 0
   [OK] f(S_voraz) >= (1-1/e) f(S_opt) (referencial: con costos la cota no aplica)

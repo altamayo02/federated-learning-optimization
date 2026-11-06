@@ -1,7 +1,7 @@
-# Manual técnico — Solución base G2 · Red
+# Manual técnico: solución base G2 · Red
 
-Proyecto semestral de Análisis y Diseño de Algoritmos (2026-2) · Primera entrega · Grupo 2.
-Este manual acompaña a `doc/Formalización.tex` (informe), al código (`src/red.py`) y a las evidencias (`resultados/`). Todo corresponde a la misma versión del repositorio.
+Proyecto semestral de Análisis y Diseño de Algoritmos (2026-2), primera entrega, Grupo 2.
+El manual acompaña al informe (`doc/Formalización.tex`), al código (`src/red.py`) y a las evidencias (`resultados/`). Los cuatro corresponden a la misma versión del repositorio.
 
 ## Contenido
 1. Propósito y alcance
@@ -21,19 +21,19 @@ Este manual acompaña a `doc/Formalización.tex` (informe), al código (`src/red
 ---
 
 ## 1. Propósito y alcance
-Esta solución base resuelve, para el caso entregado por la profesora (`entrada_G2_red_15_nodos.json`), las dos partes del problema:
+La solución base resuelve las dos partes del problema para el caso de la profesora (`entrada_G2_red_15_nodos.json`):
 
-- **Parte 1 — reparto del presupuesto de ruido:** dados los nodos ya elegidos y un presupuesto B, repartirlo para maximizar Σ u_i(x_i).
-- **Parte 2 — selección de participantes:** elegir el subconjunto de nodos de cada ronda que maximiza una utilidad conjunta submodular, sujeto a un cupo k y a un presupuesto de costos de participación C.
+- **Parte 1, reparto del presupuesto de ruido:** dados los nodos ya elegidos y un presupuesto B, repartirlo para maximizar Σ u_i(x_i).
+- **Parte 2, selección de participantes:** elegir en cada ronda el subconjunto de nodos que maximiza una utilidad conjunta submodular, con un cupo k y un presupuesto de costos de participación C.
 
-Ambas se encadenan en T rondas: la selección decide quién participa, el reparto decide cuánto ruido gasta cada uno, y el presupuesto total de cada nodo P_i se va consumiendo entre rondas.
+Las dos partes se encadenan a lo largo de T rondas. La selección decide quién participa, el reparto decide cuánto ruido gasta cada uno y el presupuesto total de cada nodo, P_i, se va gastando de una ronda a otra.
 
-Queda fuera de esta entrega (se aborda en etapas posteriores del cronograma): fallos de nodos, externalidades de red en el reparto, el algoritmo exacto con su T(n), la cota de aproximación con costos y la validación experimental con instancias crecientes.
+Quedan para etapas posteriores del cronograma los fallos de nodos, las externalidades de red en el reparto, el algoritmo exacto con su T(n), la cota de aproximación con costos y la validación experimental con instancias crecientes.
 
 ## 2. Contexto e investigación previa
 
 ### 2.1 Por qué el problema existe
-En aprendizaje federado (McMahan et al., 2017) varios nodos entrenan un modelo común sin compartir sus datos crudos, y solo envían actualizaciones. Esas actualizaciones aún pueden filtrar información, por lo que se protegen con un mecanismo de **privacidad diferencial** que añade ruido calibrado (Dwork y Roth, 2014). Más ruido protege más pero reduce la utilidad de la actualización, y cada nodo tolera solo una cantidad total de ruido (su presupuesto de privacidad). De ahí salen dos decisiones por ronda: *quién* participa y *cuánto* de su presupuesto gasta.
+En aprendizaje federado (McMahan et al., 2017) varios nodos entrenan un modelo común sin compartir sus datos crudos, y solo envían actualizaciones. Esas actualizaciones todavía pueden filtrar información, así que se protegen con privacidad diferencial, que añade ruido calibrado (Dwork y Roth, 2014). Más ruido protege más, pero reduce la utilidad de la actualización, y cada nodo tolera solo una cantidad total de ruido (su presupuesto de privacidad). En cada ronda hay entonces dos decisiones: quién participa y cuánto de su presupuesto gasta.
 
 ### 2.2 Qué se sabe de cada parte
 | Pregunta | Resultado conocido | Fuente |
@@ -45,9 +45,9 @@ En aprendizaje federado (McMahan et al., 2017) varios nodos entrenan un modelo c
 | Dureza de la selección | Reducción desde Cobertura Máxima, a su vez desde Cobertura de Conjuntos | Karp (1972); `Formalización.tex`, Teorema de NP-dureza |
 
 ### 2.3 Qué decisiones tomamos a partir de eso
-- **Parte 1** se resuelve de forma exacta con el voraz de montículo. No se justifica usar fuerza bruta ni metaheurísticas, porque existe un algoritmo óptimo y eficiente.
-- **Parte 2** se resuelve con voraz porque la selección es NP-difícil y la función es submodular, que es justo la situación donde Nemhauser et al. dan garantía. Además se verifica contra el óptimo por fuerza bruta mientras N lo permite.
-- Como el caso trae **costos distintos** además del cupo, se sabe que la cota (1 − 1/e) no aplica tal cual. Por eso se implementan dos variantes del voraz y se reporta la comparación con el óptimo solo como referencia (sección 12).
+- La Parte 1 se resuelve de forma exacta con el voraz de montículo. Existe un algoritmo óptimo y eficiente, así que no tiene sentido recurrir a fuerza bruta ni a metaheurísticas.
+- La Parte 2 usa un voraz: la selección es NP-difícil y la función es submodular, que es el caso en el que Nemhauser et al. dan garantía. Mientras N lo permite, comparamos además con el óptimo por fuerza bruta.
+- El caso trae costos distintos además del cupo, y con ellos la cota (1 − 1/e) no aplica tal cual. Por eso implementamos dos variantes del voraz y damos la comparación con el óptimo solo como referencia (sección 12).
 
 ## 3. Problema formalizado (resumen)
 La formalización completa (entradas, salidas, tamaño n, objetivo, restricciones, casos límite) está en `doc/Formalización.tex`. Para el caso G2, por ronda t:
@@ -61,32 +61,36 @@ La formalización completa (entradas, salidas, tamaño n, objetivo, restriccione
 Para el caso: N = 15, T = 3, k = 5, B = 30, C = 24, P_i = 18 para todos, costos entre 2 y 7.
 
 ## 4. Decisiones de modelado y su justificación
-El JSON entrega coeficientes pero no las fórmulas de utilidad, así que se fijaron las siguientes. Hay que revisarlas si la profesora indicó otras.
+El JSON trae coeficientes, pero no las fórmulas de utilidad. Elegimos las que siguen; si la profesora indicó otras, hay que cambiarlas.
 
 ### 4.1 Utilidad de reparto: u_i(x) = a_i · ln(1 + x)
 - *a_i* es `coeficiente_utilidad`.
 - Es creciente y cóncava, con u_i(0) = 0, como exige el modelo.
-- Ganancia marginal de la unidad x+1: Δ_i(x+1) = a_i · ln((x+2)/(x+1)), estrictamente decreciente en x. Esto refleja rendimientos decrecientes: las primeras unidades de presupuesto aportan más que las siguientes.
+- Ganancia marginal de la unidad x+1: Δ_i(x+1) = a_i · ln((x+2)/(x+1)), estrictamente decreciente en x. Es un caso de rendimientos decrecientes: las primeras unidades de presupuesto aportan más que las siguientes.
 - Se usa `log1p(1/(x+1))` para calcularlo con estabilidad numérica.
 
-### 4.2 Utilidad conjunta: f(S) = Σ_j a_j · (1 − Π_{i∈S}(1 − w_ij)), con w_jj = 1
-Es una **cobertura probabilística ponderada**: cada nodo seleccionado i «cubre» al nodo j con probabilidad w_ij (su influencia en el grafo), y cubrir a j vale a_j. Un nodo seleccionado se cubre a sí mismo (w_jj = 1).
+### 4.2 Utilidad conjunta: definición explícita de f
+El informe (Supuesto 1.4) define f con una fórmula y no con un oráculo. Dados un conjunto de objetivos J = {1..m}, pesos β_j ≥ 0 y probabilidades w_ij ∈ [0,1]:
 
-*Por qué es monótona y submodular.* Sea m_S(j) = Π_{i∈S}(1 − w_ij) ∈ [0,1], la probabilidad de que j siga sin cubrir. Agregar un nodo i a S aporta
+  f(S) = Σ_{j∈J} β_j · (1 − Π_{i∈S}(1 − w_ij))
 
-  f(S∪{i}) − f(S) = Σ_j a_j · m_S(j) · w_ij ≥ 0,
+Es una cobertura probabilística ponderada: cada nodo seleccionado i «cubre» al objetivo j con probabilidad w_ij, y cubrir a j vale β_j. En el caso G2, J = V (así m = N), β_j = a_j, w_ij es la `peso_influencia` del grafo y w_jj = 1 (un nodo seleccionado se cubre a sí mismo). Con w_ij ∈ {0,1} y β_j = 1 se obtiene |⋃F_i|, la Cobertura Máxima.
 
-lo que prueba monotonía. Si A ⊆ B, entonces m_B(j) ≤ m_A(j) para todo j, porque se multiplican más factores en [0,1]. Por tanto la ganancia de i sobre A es ≥ la ganancia de i sobre B: submodularidad. Las ganancias son además calculables incrementalmente guardando el vector m(·).
+*Por qué es monótona y submodular.* Sea μ_S(j) = Π_{i∈S}(1 − w_ij) ∈ [0,1], la probabilidad de que j siga sin cubrir. Agregar un nodo i a S aporta
 
-Esta elección es coherente con la reducción de NP-dureza: la cobertura de conjuntos |⋃F_i| es el caso particular en que w_ij ∈ {0,1}. El grafo del caso entra en la selección a través de f.
+  f(S∪{i}) − f(S) = Σ_j β_j · μ_S(j) · w_ij ≥ 0,
+
+lo que prueba monotonía. Si A ⊆ B, entonces μ_B(j) ≤ μ_A(j) para todo j, porque se multiplican más factores en [0,1]. Por tanto, la ganancia de i sobre A es mayor o igual que sobre B, que es la submodularidad. Guardando el vector μ(·), las ganancias se calculan de forma incremental.
+
+Esta f encaja con la reducción de NP-dureza, ya que la cobertura |⋃F_i| es el caso w_ij ∈ {0,1}. El grafo del caso influye en la selección a través de f.
 
 ### 4.3 Otras decisiones
-- La influencia se toma **simétrica** (w_ij = w_ji), como entrega el caso (aristas no dirigidas).
-- **No hay fallos de nodos** (el caso no trae probabilidades q_i). Un nodo está disponible mientras le quede presupuesto.
-- El presupuesto es **entero y discreto**; el reparto asigna unidades de a una.
-- **Cupo y costos simultáneos:** el caso da k = 5 y C = 24; se exigen ambas restricciones.
-- **El presupuesto P_i se consume entre rondas** y no se transfiere entre nodos.
-- **Desempates** por menor índice de nodo, para que la ejecución sea determinista.
+- La influencia es simétrica (w_ij = w_ji), como en el caso, que trae aristas no dirigidas.
+- No modelamos fallos de nodos, porque el caso no trae probabilidades q_i. Un nodo está disponible mientras le quede presupuesto.
+- El presupuesto es entero y discreto, y el reparto asigna las unidades de una en una.
+- Cupo y costos rigen a la vez: el caso da k = 5 y C = 24, y se exigen ambos.
+- El presupuesto P_i se gasta entre rondas y no se transfiere entre nodos.
+- Los empates se resuelven por menor índice de nodo, para que la ejecución sea determinista.
 
 ## 5. Algoritmos
 
@@ -107,38 +111,60 @@ reparto(S, B, restante):
 ### 5.2 Selección voraz con cupo y costos (Parte 2)
 ```
 seleccion(elegibles, modo):
-    S ← ∅ ; costo ← 0 ; m[j] ← 1 para todo j
+    S ← ∅ ; costo ← 0 ; μ[j] ← 1 para todo j
     mientras |S| < k:
         cand ← { i ∈ elegibles \ S : costo + c_i ≤ C }
         si cand vacío: parar
-        para i en cand: g_i ← Σ_j a_j · m[j] · w_ij        # ganancia marginal
+        para i en cand: g_i ← Σ_j β_j · μ[j] · w_ij        # ganancia marginal
         elegir i* = argmax g_i              (modo "ganancia")
                o  argmax g_i / c_i          (modo "razón")
         S ← S ∪ {i*} ; costo ← costo + c_{i*}
-        m[j] ← m[j] · (1 − w_{i*,j}) para todo j
+        μ[j] ← μ[j] · (1 − w_{i*,j}) para todo j
     devolver S
 ```
 En cada ronda se ejecutan los dos modos y se conserva el de mayor f(S).
 
 **Qué garantiza y qué no.**
-- Sin costos (c_i = 1, C = k), el voraz por ganancia cumple f(S) ≥ (1 − 1/e)·f(S_opt) (Nemhauser et al., 1978). La idea: en cada paso, la ganancia marginal del voraz es al menos (1/k) de lo que falta para llegar al óptimo, lo que da f(S_k) ≥ (1 − (1 − 1/k)^k) f(S_opt) ≥ (1 − 1/e) f(S_opt).
-- Con costos distintos **no hay garantía**. Ejemplo: C = 10, un nodo A de ganancia 1 y costo 1, y un nodo B de ganancia 1,1 y costo 10. El voraz por ganancia toma B y agota el presupuesto, mientras que el óptimo toma A y otros nodos baratos por mucho más; con ganancias de ese estilo la razón puede hacerse tan mala como se quiera. El voraz por razón evita este caso pero tiene su propio contraejemplo (un nodo muy barato con ganancia pequeña le gana a uno de gran valor que sí cabía).
-- La garantía (1 − 1/e) para *budgeted maximum coverage* se obtiene combinando el voraz por razón con el mejor elemento individual (Khuller et al., 1999, con razón (1 − 1/e)/2) o con enumeración de tripletes iniciales (Sviridenko, 2004, con razón (1 − 1/e)). La solución base **no** implementa esas correcciones; es un objetivo de la etapa del algoritmo aproximado.
+- Sin costos (c_i = 1, C = k), el voraz por ganancia cumple f(S) ≥ (1 − 1/e)·f(S_opt) (Nemhauser et al., 1978). La idea es que, en cada paso, la ganancia marginal del voraz es al menos 1/k de lo que falta para llegar al óptimo, lo que da f(S_k) ≥ (1 − (1 − 1/k)^k) f(S_opt) ≥ (1 − 1/e) f(S_opt).
+- Con costos distintos **no hay garantía**. Ejemplo: C = 10, un nodo A de ganancia 1 y costo 1, y un nodo B de ganancia 1,1 y costo 10. El voraz por ganancia toma B y agota el presupuesto, mientras que el óptimo toma A y otros nodos baratos por mucho más; con ganancias de ese estilo la razón puede empeorar tanto como se quiera. El voraz por razón evita este caso, pero tiene su propio contraejemplo: un nodo muy barato y de poca ganancia le gana a uno de gran valor que sí cabía.
+- Para *budgeted maximum coverage* hay garantías que salen de dos correcciones al voraz por razón. La solución base no implementa ninguna, y quedan para la etapa del algoritmo aproximado. Se explican a continuación.
+
+#### Corrección 1: añadir el mejor nodo individual (Khuller, Moss y Naor, 1999)
+*Qué es.* Además del voraz por razón ganancia/costo, se calcula el mejor nodo individual: el nodo i con c_i ≤ C que maximiza f({i}). La respuesta es el mejor entre la solución del voraz y ese nodo solo. Cuesta N evaluaciones de f más, O(N²) con esta f.
+
+*Por qué hace falta.* El voraz por razón puede llenar el presupuesto con nodos baratos y dejar fuera un nodo caro que valía muchísimo. Ejemplo con C = 10:
+
+| Nodo | Ganancia | Costo | Razón |
+|---|---|---|---|
+| A | 2 | 1 | 2,0 |
+| B | 10 | 10 | 1,0 |
+
+El voraz por razón toma A primero, que tiene la razón mayor. Después B ya no cabe (1 + 10 > 10), así que obtiene 2 frente a un óptimo de 10. Si B costara C y valiera C, la razón entre lo obtenido y el óptimo sería 2/C, tan mala como se quiera. El mejor nodo individual arregla este caso, porque B solo vale 10. Con esta corrección se prueba una garantía de (1 − 1/e)/2 ≈ 0,316 del óptimo.
+
+#### Corrección 2: enumerar los tripletes iniciales (Sviridenko, 2004)
+*Qué es.* Se prueba cada subconjunto de hasta 3 nodos que quepa en C como semilla. Para cada semilla se completa con el voraz por razón sobre los nodos restantes, y se conserva la mejor solución de todas. Son O(N³) semillas.
+
+*Por qué ayuda.* El óptimo contiene algunos nodos de mucho valor. Entre todas las semillas de tamaño 3 hay una que coincide con los 3 nodos de mayor valor del óptimo, y al voraz solo le queda completar el resto, donde sus errores pesan menos. La garantía sube a (1 − 1/e) ≈ 0,632, igual que sin costos.
+
+*Costo.* Cada una de las O(N³) semillas lanza un voraz de O(k·N²) con esta f, o sea O(k·N⁵) en total. Es polinomial pero caro, y por eso no está en la solución base.
+
+#### Qué hace entonces la solución base
+Ejecuta el voraz por ganancia y el voraz por razón, y se queda con el mejor. Eso no equivale a ninguna de las dos correcciones, porque no mira el mejor nodo individual ni enumera semillas. Por eso no podemos afirmar ninguna de las dos garantías. En el caso entregado el resultado coincide con el óptimo (razón 1,0), pero es un resultado de esa instancia, no una garantía. Añadir el mejor nodo individual es barato (N evaluaciones por ronda) y es el siguiente paso.
 
 ## 6. Análisis de complejidad
 Notación: N nodos, k cupo, B presupuesto de ruido por ronda, T rondas.
 
-**Reparto (por ronda).** Construir el montículo: O(|S|) con |S| ≤ k. Cada una de las B extracciones y reinserciones cuesta O(log |S|). Total: **O(k + B log k)**. Es polinomial en B y N, y pseudo-polinomial en la longitud de la codificación binaria de B (el `.tex` lo deja explícito). En la formulación del curso, con S = N: T(N,B) = O(B log N).
+**Reparto (por ronda).** Construir el montículo: O(|S|) con |S| ≤ k. Cada una de las B extracciones y reinserciones cuesta O(log |S|). Total: **O(k + B log k)**. Es polinomial en B y N, y pseudo-polinomial en la longitud de la codificación binaria de B (el informe lo aclara). En la formulación del curso, con S = N: T(N,B) = O(B log N).
 
 **Selección (por ronda).**
 - Ganancia marginal de un candidato con esta f: recorre los N nodos j → O(N).
-- Un paso evalúa hasta N candidatos → O(N²); actualizar m(·) cuesta O(N).
+- Un paso evalúa hasta N candidatos → O(N²); actualizar μ(·) cuesta O(N).
 - k pasos → **O(k·N²)**; dos modos → factor constante 2.
-- Con un oráculo de ganancia marginal O(1) (supuesto del `.tex`), el costo sería O(k·N). El factor N adicional viene de que aquí f se evalúa de forma explícita. Para la validación experimental hay que contrastar contra la T(n) de *esta* implementación.
+- Como f está definida explícitamente, la ganancia marginal cuesta O(m), y aquí m = N. En general el costo es **O(k·N·m)**. No usamos el O(k·N) que daría un oráculo O(1), porque ya no hay oráculo, y la T(n) experimental se contrastará con esta expresión.
 
-**Total.** T rondas: **O(T·(k·N² + k + B log k))**. Con los parámetros fijos del caso es O(N²), y el caso real se resuelve en alrededor de un milisegundo.
+**Total.** T rondas: **O(T·(k·N² + k + B log k))**. Con los parámetros del caso fijos es O(N²), y el caso real se resuelve en cerca de un milisegundo.
 
-**Fuerza bruta de verificación.** Enumera Σ_{r≤k} C(N, r) subconjuntos y evalúa f en O(r·N) cada uno. Para N = 15, k = 5 son 4 944 subconjuntos por ronda. Se omite si superan 300 000 (opción `--sin-exacto` para omitirla siempre).
+**Fuerza bruta de verificación.** Enumera Σ_{r≤k} C(N, r) subconjuntos y evalúa f en O(r·N) cada uno. Para N = 15, k = 5 son 4 944 subconjuntos por ronda. Se omite si hay más de 300 000, y `--sin-exacto` la omite siempre.
 
 ## 7. Estructura del código
 ```
@@ -176,7 +202,7 @@ Funciones de `src/red.py`:
               "presupuesto_total_nodo": 18, "costo_participacion": 3}, ... ]
 }
 ```
-Todos los campos son obligatorios. El programa comprueba que `numero_nodos` coincida con la lista de nodos; los demás errores de formato terminan con la excepción de Python correspondiente (limitación: no hay validación de esquema más fina).
+Todos los campos son obligatorios. El programa comprueba que `numero_nodos` coincida con la lista de nodos. Cualquier otro error de formato termina con la excepción de Python correspondiente, porque no hay validación de esquema más fina.
 
 ### 8.2 Salida
 `resultados/<caso>_resultado.json`:
@@ -204,7 +230,7 @@ python3 src/red.py caso1.json caso2.json -o salida   # varios casos, otra carpet
 python3 src/red.py caso.json --sin-exacto            # sin fuerza bruta (instancias grandes)
 python3 tests/test_red.py                            # pruebas
 ```
-Cada ejecución imprime la traza y escribe los dos archivos por caso en la carpeta de salida (por defecto `resultados/`). El resultado no depende del directorio desde donde se lance. Se comprobó que dos ejecuciones producen trazas idénticas.
+Cada ejecución imprime la traza y escribe los dos archivos por caso en la carpeta de salida (por defecto `resultados/`). El resultado no depende del directorio desde el que se lance, y dos ejecuciones producen trazas idénticas.
 
 ## 10. Ejemplo trabajado con el caso de la profesora
 Datos de la ronda 1 (los valores salen de `resultados/`).
@@ -219,41 +245,41 @@ Datos de la ronda 1 (los valores salen de `resultados/`).
 | 4 | N15 | 5,531 | 16 | |
 | 5 | N13 | 2,348 | 23 | Se alcanza k = 5; costo 23 ≤ 24 |
 
-Las ganancias decrecen paso a paso, como corresponde a una función submodular. La verificación manual del paso 1: f({N11}) = a_N11 + Σ_{j≠N11} a_j·w_{N11,j} = 103,49. El voraz por razón ganancia/costo da f = 145,106 y el voraz por ganancia da 145,580, por lo que se conserva este último. La fuerza bruta (4 944 subconjuntos) encuentra el mismo conjunto óptimo, con f* = 145,580 y razón 1,0.
+Las ganancias decrecen paso a paso, como corresponde a una función submodular. Comprobación manual del paso 1: f({N11}) = a_N11 + Σ_{j≠N11} a_j·w_{N11,j} = 103,49. El voraz por razón ganancia/costo da f = 145,106 y el voraz por ganancia da 145,580, así que se conserva este último. La fuerza bruta (4 944 subconjuntos) encuentra el mismo conjunto óptimo, con f* = 145,580 y razón 1,0.
 
-**Reparto de B = 30.** La primera unidad va a N14 con ganancia 10,1·ln 2 = 7,0008 (la mayor posible entre los cinco), la segunda a N09 con 9,9·ln 2 = 6,8622, y así sucesivamente. Resultado: N11 = 5, N14 = 7, N09 = 7, N15 = 6, N13 = 5 (suma 30), con utilidad 88,564.
+**Reparto de B = 30.** La primera unidad va a N14 con ganancia 10,1·ln 2 = 7,0008 (la mayor entre los cinco), la segunda a N09 con 9,9·ln 2 = 6,8622, y así sucesivamente. Resultado: N11 = 5, N14 = 7, N09 = 7, N15 = 6, N13 = 5 (suma 30), con utilidad 88,564.
 
-**Efecto del presupuesto total.** Tras la ronda 1, N09 y N14 conservan 11 unidades de 18. Tras la ronda 2 conservan 4. En la ronda 3 solo pueden recibir 4, por lo que el reparto cambia a N11 = 8, N14 = 4, N09 = 4, N15 = 6, N13 = 8 (utilidad 85,611, menor que en las rondas anteriores porque los topes obligan a mover unidades a nodos de menor ganancia). Al terminar, los cinco nodos elegidos quedan con 0 de presupuesto.
+**Efecto del presupuesto total.** Tras la ronda 1, N09 y N14 conservan 11 unidades de 18, y tras la ronda 2 conservan 4. En la ronda 3 solo pueden recibir 4, así que el reparto cambia a N11 = 8, N14 = 4, N09 = 4, N15 = 6, N13 = 8 (utilidad 85,611, menor que en las rondas anteriores porque los topes obligan a mover unidades a nodos de menor ganancia). Al terminar, los cinco nodos elegidos quedan con 0 de presupuesto.
 
 **Utilidad total del caso:** 699,477 en 0,0009 s.
 
 ## 11. Validación realizada
-1. **Verificaciones dentro de cada ejecución** (aparecen en la traza): |S| ≤ k, Σ c_i ≤ C, Σ x_i ≤ B, x_i ≤ presupuesto restante, x_i enteros no negativos y, como referencia, f(S_voraz) ≥ (1 − 1/e)·f(S_opt). Todas dan OK en las tres rondas.
+1. **Verificaciones en cada ejecución** (salen en la traza): |S| ≤ k, Σ c_i ≤ C, Σ x_i ≤ B, x_i ≤ presupuesto restante y, como referencia, f(S_voraz) ≥ (1 − 1/e)·f(S_opt). Todas dan OK en las tres rondas.
 2. **Pruebas automáticas** (`tests/test_red.py`):
    - el reparto voraz coincide con la enumeración exhaustiva de todos los repartos de 8 unidades entre 3 nodos;
    - f es monótona y submodular en un ejemplo concreto;
    - se cumplen las restricciones en las 3 rondas y ningún nodo supera su presupuesto total de 18.
 3. **Comparación con el óptimo exacto:** razón voraz/óptimo = 1,0 en las tres rondas. Con costos esto es una observación sobre esta instancia, no una garantía.
-4. **Reproducibilidad:** ejecución desde otro directorio y con otra carpeta de salida produjo la misma traza.
+4. **Reproducibilidad:** ejecutamos desde otro directorio y con otra carpeta de salida, y la traza fue la misma.
 
 ## 12. Limitaciones y trabajo futuro
 | Limitación | Consecuencia | Etapa donde se aborda |
 |---|---|---|
-| u_i y f son una elección propia (sección 4) | Los valores numéricos dependen de ella; la corrección del algoritmo no | Confirmar con la profesora |
+| u_i y f son elección nuestra (sección 4) | Los valores numéricos dependen de ella, la corrección del algoritmo no | Confirmar con la profesora |
 | Con costos distintos no hay garantía (1 − 1/e) | La razón al óptimo es solo referencial; se necesita el voraz con mejor elemento individual o enumeración de tripletes | Algoritmo aproximado (semanas 7-8) |
 | Sin fallos de nodos | No se modela la variante de rondas con fallos | Variantes |
 | El reparto ignora las externalidades de red | Con utilidades dependientes de vecinos, el voraz del reparto puede dejar de ser óptimo | Variantes |
-| Selección O(k·N²) por evaluar f de forma explícita | La T(n) experimental debe compararse con esta, no con O(N·k) | Experimentación (semanas 9-10) |
+| Selección O(k·N·m) = O(k·N²) con f explícita | La T(n) experimental se compara con esta expresión | Experimentación (semanas 9-10) |
 | Fuerza bruta solo para N pequeño | No sirve como referencia con instancias grandes | Algoritmo exacto (semanas 5-6) |
 | Selección miope entre rondas | No se planifica el uso del presupuesto P_i a lo largo de las T rondas: el voraz elige igual todas las rondas | Variantes |
-| Validación de entrada mínima | Un JSON mal formado produce una excepción de Python | — |
+| Validación de entrada mínima | Un JSON mal formado produce una excepción de Python | Sin etapa asignada |
 | Una sola medición de tiempo | Es válida como evidencia de ejecución, pero es ruidosa | Experimentación |
 
 ## 13. Referencias
 - B. McMahan, E. Moore, D. Ramage, S. Hampson y B. Agüera y Arcas. *Communication-Efficient Learning of Deep Networks from Decentralized Data.* AISTATS, 2017.
 - C. Dwork y A. Roth. *The Algorithmic Foundations of Differential Privacy.* Foundations and Trends in Theoretical Computer Science 9(3–4), 2014.
 - T. Ibaraki y N. Katoh. *Resource Allocation Problems: Algorithmic Approaches.* MIT Press, 1988.
-- G. L. Nemhauser, L. A. Wolsey y M. L. Fisher. *An analysis of approximations for maximizing submodular set functions — I.* Mathematical Programming 14, 1978.
+- G. L. Nemhauser, L. A. Wolsey y M. L. Fisher. *An analysis of approximations for maximizing submodular set functions-I.* Mathematical Programming 14, 1978.
 - U. Feige. *A threshold of ln n for approximating set cover.* Journal of the ACM 45(4), 1998.
 - S. Khuller, A. Moss y J. Naor. *The budgeted maximum coverage problem.* Information Processing Letters 70(1), 1999.
 - M. Sviridenko. *A note on maximizing a submodular set function subject to a knapsack constraint.* Operations Research Letters 32(1), 2004.

@@ -24,7 +24,7 @@ class T(unittest.TestCase):
         self.assertGreaterEqual(inst.f(Bs), inst.f(A))
 
     def test_restricciones_y_cota(self):
-        rondas, _ = red.resolver(self.inst)
+        rondas, _, _ = red.resolver(self.inst)
         for r in rondas:
             self.assertTrue(all(r["verificacion"].values()), r["verificacion"])
         tot = {}

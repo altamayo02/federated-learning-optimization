@@ -1,6 +1,6 @@
 {
   "caso": "entrada_G2_red_15_nodos",
-  "tiempo_segundos": 0.0008933059871196747,
+  "tiempo_segundos": 0.0009465909097343683,
   "utilidad_total": 699.4772410650498,
   "rondas": [
     {
@@ -319,7 +319,6 @@
         "sum c_i <= C (23 <= 24)": true,
         "sum x_i <= B (30 <= 30)": true,
         "x_i <= presupuesto restante del nodo": true,
-        "x_i enteros >= 0": true,
         "f(S_voraz) >= (1-1/e) f(S_opt) (referencial: con costos la cota no aplica)": true
       }
     },
@@ -639,7 +638,6 @@
         "sum c_i <= C (23 <= 24)": true,
         "sum x_i <= B (30 <= 30)": true,
         "x_i <= presupuesto restante del nodo": true,
-        "x_i enteros >= 0": true,
         "f(S_voraz) >= (1-1/e) f(S_opt) (referencial: con costos la cota no aplica)": true
       }
     },
@@ -959,7 +957,6 @@
         "sum c_i <= C (23 <= 24)": true,
         "sum x_i <= B (30 <= 30)": true,
         "x_i <= presupuesto restante del nodo": true,
-        "x_i enteros >= 0": true,
         "f(S_voraz) >= (1-1/e) f(S_opt) (referencial: con costos la cota no aplica)": true
       }
     }

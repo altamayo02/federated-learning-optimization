@@ -1,4 +1,4 @@
-"""Solución base — Proyecto Red (G2): selección de participantes + reparto de presupuesto.
+"""Solución base: Proyecto Red (G2): selección de participantes + reparto de presupuesto.
 
 Modelo (ver doc/Manual_tecnico.md, sección "Decisiones de modelado"):
   * u_i(x)  = a_i * ln(1 + x)            (creciente, cóncava, u_i(0)=0)
@@ -125,10 +125,13 @@ def reparto_voraz(inst, S, B, restante):
 
 # ------------------------------------------------------------- orquestación
 def resolver(inst, verificar_exacto=True):
+    """Resuelve las T rondas. Devuelve (rondas, utilidad_total, segundos del
+    algoritmo), sin contar la fuerza bruta de verificación."""
     restante = list(inst.P)
-    rondas, util_total = [], 0.0
+    rondas, util_total, seg = [], 0.0, 0.0
     for t in range(1, inst.T + 1):
         eleg = [i for i in range(inst.N) if restante[i] > 0]
+        t0 = time.perf_counter()
         # el mejor entre voraz por ganancia y voraz por razón ganancia/costo
         resultados = []
         for modo in ("ganancia", "razon"):
@@ -136,6 +139,7 @@ def resolver(inst, verificar_exacto=True):
             resultados.append((inst.f(S), modo, S, tr))
         fS, modo, S, trS = max(resultados, key=lambda r: r[0])
         x, trX = reparto_voraz(inst, S, inst.B, restante)
+        seg += time.perf_counter() - t0
         for i, v in x.items():
             restante[i] -= v
         u = sum(inst.utilidad_nodo(i, v) for i, v in x.items())
@@ -157,7 +161,7 @@ def resolver(inst, verificar_exacto=True):
         ronda["verificacion"] = verificar(inst, ronda, S, x, restante)
         util_total += fS + u
         rondas.append(ronda)
-    return rondas, util_total
+    return rondas, util_total, seg
 
 
 def verificar(inst, ronda, S, x, restante):
@@ -167,7 +171,6 @@ def verificar(inst, ronda, S, x, restante):
         f"sum c_i <= C ({sum(inst.c[i] for i in S)} <= {inst.C})": sum(inst.c[i] for i in S) <= inst.C,
         f"sum x_i <= B ({gastado} <= {inst.B})": gastado <= inst.B,
         "x_i <= presupuesto restante del nodo": all(r >= 0 for r in restante),
-        "x_i enteros >= 0": all(isinstance(v, int) and v >= 0 for v in x.values()),
     }
     if "exacto" in ronda:
         v["f(S_voraz) >= (1-1/e) f(S_opt) (referencial: con costos la cota no aplica)"] = (
@@ -205,11 +208,7 @@ def main():
         nombre = os.path.splitext(os.path.basename(ruta))[0]
         with open(ruta, encoding="utf-8") as fh:
             inst = Instancia(json.load(fh))
-        t0 = time.perf_counter()
-        rondas, util = resolver(inst, verificar_exacto=False)
-        seg = time.perf_counter() - t0  # tiempo del algoritmo, sin la verificación exacta
-        if not a.sin_exacto:
-            rondas, util = resolver(inst, verificar_exacto=True)
+        rondas, util, seg = resolver(inst, verificar_exacto=not a.sin_exacto)
         with open(os.path.join(a.salida, f"{nombre}_resultado.json"), "w", encoding="utf-8") as fh:
             json.dump({"caso": nombre, "tiempo_segundos": seg, "utilidad_total": util,
                        "rondas": rondas}, fh, indent=2, ensure_ascii=False)

@@ -46,9 +46,9 @@
 \maketitle
 
 \begin{abstract}
-Este documento formaliza los problemas de \textbf{distribución de presupuesto} y \textbf{selección de participantes} en el contexto del entrenamiento de un modelo de IA de manera federada: diferentes nodos computacionales son propietarios de datos, los cuales contribuyen simultáneamente al entrenamiento del modelo. El matiz del problema a tratar surge cuando se considera la \textbf{privacidad de los datos} utilizados para el entrenamiento; con el fin de procurar su preservación, se añade ruido a los datos, el cual implica una \textbf{delegación de presupuesto} a cada nodo de tal manera que los datos en general se mantengan útiles para el aprendizaje.
+Este documento formaliza dos problemas del entrenamiento federado de un modelo de IA: cómo \textbf{repartir el presupuesto de ruido} entre los nodos y cómo \textbf{elegir los nodos participantes} en cada ronda. Varios nodos, cada uno dueño de sus datos, contribuyen a la vez al entrenamiento. Para proteger la privacidad de esos datos se les añade ruido, y eso obliga a repartir un presupuesto entre los nodos sin que los datos dejen de ser útiles para el aprendizaje.
 
-Se definen matemáticamente los problemas de \textbf{distribución óptima del presupuesto de introducción de ruido} y la \textbf{selección óptima de nodos participantes} en cada etapa de entrenamiento, además de algunas variantes para ambos. Cada algoritmo se formaliza con: una \textbf{entrada de datos} y su \textbf{tamaño} correspondiente, una \textbf{salida de datos} y su \textbf{objetivo principal}. Además, se demuestra por reducción polinomial desde Cobertura Máxima que la selección de nodos es NP-difícil, y se describe la instancia concreta y la solución base implementada en el repositorio. El análisis de eficiencia de los algoritmos y la validación experimental corresponden a etapas posteriores.
+Para cada problema, y para sus variantes, se fijan la entrada y su tamaño, la salida y el objetivo. Además, se demuestra por reducción polinomial desde Cobertura Máxima que la selección de nodos es NP-difícil, y se describen la instancia concreta y la solución base que está en el repositorio. El análisis de eficiencia de los algoritmos y la validación experimental quedan para etapas posteriores.
 \end{abstract}
 
 \newpage
@@ -121,24 +121,57 @@ En otras palabras, lo que crece cuando la instancia se hace más grande es el
 número de nodos $N$ y, en las variantes con red, también el número de aristas
 $|E|$. Los parámetros numéricos se mantienen fijos o se reportan aparte.
 
-\subsection{Modelo de acceso a la entrada}
+\subsection{Definición explícita de las funciones}
 
-\begin{supuesto}[Acceso por oráculo]\label{sup:oraculo}
-Las funciones de utilidad $u_i$ se representan mediante un oráculo que
-devuelve $u_i(j)$ o su ganancia marginal $\Delta_i(j)$ en tiempo $O(1)$. La
-función de conjunto $f$ se representa mediante un oráculo que devuelve $f(S)$
-en tiempo $O(1)$ para cualquier $S\subseteq V$. El costo de las consultas al
-oráculo se contabiliza en la función de eficiencia del algoritmo.
+\begin{supuesto}[Definición explícita de $u_i$ y $f$]\label{sup:explicito}
+Las funciones del modelo se dan por fórmula y no por oráculo:
+\begin{enumerate}[leftmargin=*,label=(\alph*)]
+  \item \emph{Utilidad de reparto.} Para cada nodo $i$ se da un coeficiente
+  $a_i\ge0$ y
+  \[
+    u_i(x)=a_i\ln(1+x),\qquad
+    \Delta_i(x)=u_i(x)-u_i(x-1)=a_i\ln\frac{x+1}{x}\quad(x\ge1).
+  \]
+  \item \emph{Utilidad conjunta (cobertura probabilística ponderada).} Se da un
+  conjunto de objetivos $J=\{1,\dots,m\}$ con pesos $\beta_j\ge0$ y
+  probabilidades $w_{ij}\in[0,1]$ para $i\in V$, $j\in J$, y
+  \[
+    f(S)=\sum_{j\in J}\beta_j\Bigl(1-\prod_{i\in S}(1-w_{ij})\Bigr),
+    \qquad S\subseteq V.
+  \]
+  En el caso G2, $J=V$, $\beta_j=a_j$, $w_{ij}$ es el peso de influencia del
+  grafo (simétrico) y $w_{jj}=1$.
+\end{enumerate}
+Con estas definiciones, $u_i(x)$ y $\Delta_i(x)$ se evalúan en $O(1)$ y
+$f(S)$ en $O(|S|\,m)$. Si se mantiene el vector
+$\mu_S(j)=\prod_{i\in S}(1-w_{ij})$, la ganancia marginal
+$f(S\cup\{i\})-f(S)=\sum_{j\in J}\beta_j\,\mu_S(j)\,w_{ij}$ se evalúa en
+$O(m)$ y $\mu$ se actualiza en $O(m)$ al agregar un nodo. Estos costos se
+contabilizan en las funciones de eficiencia.
 \end{supuesto}
 
-\begin{observacion}[Representación explícita]
+\begin{proposicion}[Propiedades de $u_i$ y $f$]\label{prop:propiedades}
+Bajo el Supuesto~\ref{sup:explicito}: (i) $u_i$ es creciente y cóncava en
+sentido discreto con $u_i(0)=0$; (ii) $f\ge0$ es monótona y submodular, con
+$f(\emptyset)=0$.
+\end{proposicion}
+
+\begin{proof}
+(i) $\Delta_i(x)=a_i\ln(1+1/x)\ge0$ y es decreciente en $x$.
+(ii) Para $A\subseteq V$ e $i\notin A$, la ganancia marginal es
+$\sum_j\beta_j\mu_A(j)w_{ij}\ge0$, de donde la monotonía. Si $A\subseteq B$,
+$\mu_B(j)\le\mu_A(j)$ porque $B$ añade factores en $[0,1]$; luego la ganancia de
+$i$ sobre $A$ es mayor o igual que sobre $B$, que es la submodularidad.
+\end{proof}
+
+\begin{observacion}[Tamaño de la representación]
 \label{obs:representacion}
-Si las utilidades se entregaran como una tabla con las $B$ ganancias
-marginales de cada nodo, la entrada tendría $\Theta(NB)$ números. Si $f$ se
-entregara de forma explícita, su descripción podría tener tamaño exponencial en
-$N$. El modelo de oráculo del Supuesto~\ref{sup:oraculo} es el que se adopta en
-este documento y es el que permite que $n=N$ (o $n=N+|E|$) sea una medida
-combinatoria significativa del tamaño de la instancia.
+Con la definición explícita, las utilidades de reparto ocupan $N$ coeficientes
+$a_i$ (no una tabla de $B$ ganancias por nodo) y $f$ ocupa la matriz
+$(w_{ij})$ de $N\times m$ números, en lugar de una descripción exponencial en
+$N$. Se mantiene $n=N$ (o $n=N+|E|$) como medida combinatoria del tamaño, y $m$
+se reporta aparte como parámetro de la instancia; en el caso G2, $m=N$ y la
+matriz proviene del grafo. Las funciones de eficiencia se expresan en $N$ y $m$.
 \end{observacion}
 
 \subsection{Supuestos generales}
@@ -152,7 +185,7 @@ Salvo que se indique lo contrario:
   \item La función de conjunto $f$ es no negativa, monótona y submodular.
   \item La red no tiene autoaristas y los pesos de influencia son no negativos.
   \item Los nodos y las aristas forman parte de la entrada; las utilidades y
-  $f$ se acceden por oráculo.
+  $f$ se calculan con las fórmulas del Supuesto~\ref{sup:explicito}.
 \end{enumerate}
 \end{supuesto}
 
@@ -164,8 +197,8 @@ Salvo que se indique lo contrario:
 
 \textbf{Entrada.} Un entero $N\in\N$, un presupuesto $B\in\Z_{\ge0}$ y, para
 cada nodo $i\in V$, una función de utilidad $u_i:\Z_{\ge0}\to\R_{\ge0}$
-creciente y cóncava en sentido discreto, con $u_i(0)=0$, accesible por oráculo
-según el Supuesto~\ref{sup:oraculo}.
+creciente y cóncava en sentido discreto, con $u_i(0)=0$, dada por la fórmula
+del Supuesto~\ref{sup:explicito}.
 
 \textbf{Salida.} Un vector de asignación
 $x=(x_1,\dots,x_N)\in\Z_{\ge0}^N$.
@@ -205,8 +238,8 @@ explícita para que la definición de $n$ no sea ambigua.
 \begin{problema}\label{prob:seleccion} Selección con cupo fijo
 
 \textbf{Entrada.} Un entero $N\in\N$, un entero $k$ con $0\le k\le N$ y una
-función de conjunto $f:2^V\to\R_{\ge0}$ monótona y submodular, accesible por
-oráculo según el Supuesto~\ref{sup:oraculo}.
+función de conjunto $f:2^V\to\R_{\ge0}$ monótona y submodular, definida
+explícitamente según el Supuesto~\ref{sup:explicito}.
 
 \textbf{Salida.} Un subconjunto $S\subseteq V$ con $|S|=k$.
 
@@ -294,8 +327,11 @@ $(U,\mathcal{F},k,\tau)$ de \textsc{MC}, se construye la instancia de
   f(S)=\Bigl|\bigcup_{i\in S}F_i\Bigr|\quad(S\subseteq V),\qquad
   \text{mismo }k,\qquad\text{mismo }\tau .
 \]
-La función $f$ se entrega de forma explícita mediante la matriz de incidencia
-$M\in\{0,1\}^{N\times m}$, con $M_{ij}=1$ si y solo si $j\in F_i$. La
+Esta $f$ pertenece a la familia del Supuesto~\ref{sup:explicito}(b), con
+$J=U$, $\beta_j=1$ y $w_{ij}=M_{ij}$, donde $M\in\{0,1\}^{N\times m}$ es la
+matriz de incidencia ($M_{ij}=1$ si y solo si $j\in F_i$): para $w_{ij}\in\{0,1\}$,
+$1-\prod_{i\in S}(1-w_{ij})$ vale $1$ si algún nodo de $S$ cubre a $j$ y $0$ en
+otro caso. La
 construcción escribe $Nm$ bits, es decir, tiene costo $O(Nm)$, y $f(S)$ se evalúa
 en $O(|S|\,m)$. El tamaño de la instancia producida es polinomial en el tamaño
 de la original.
@@ -316,7 +352,8 @@ de la original.
 \end{itemize}
 Por tanto, $(N,k,f)$ es una instancia válida del
 Problema~\ref{prob:seleccion}: la utilidad conjunta ``tamaño de la unión'' es
-un caso particular de función monótona y submodular.
+un caso particular de la familia explícita, y sus propiedades se siguen también
+de la Proposición~\ref{prop:propiedades}.
 
 \textbf{(4) Corrección.} Se prueba que la respuesta de \textsc{MC} es sí si y
 solo si la de \textsc{SEL} es sí.
@@ -340,11 +377,11 @@ el problema de optimización es NP-difícil.
 
 \subsection{Consecuencias y alcance}
 
-\begin{observacion}[No depende del modelo de oráculo]
-La función $f$ de la reducción se entrega de forma explícita y se evalúa en
-tiempo polinomial. Por tanto, la dificultad no es un artefacto del acceso por
-oráculo del Supuesto~\ref{sup:oraculo}: el problema es NP-difícil incluso con
-$f$ representada explícitamente.
+\begin{observacion}[La dureza vale para la $f$ explícita]
+La reducción produce instancias de la familia definida explícitamente en el
+Supuesto~\ref{sup:explicito}, con $f$ evaluable en tiempo polinomial. Por tanto,
+el problema es NP-difícil incluso para esa familia concreta de funciones, y la
+dificultad no se debe a un acceso por oráculo.
 \end{observacion}
 
 \begin{observacion}[Extensión a la variante con costos y al problema integrado]
@@ -371,16 +408,11 @@ El repositorio incluye una solución base que resuelve el Problema~\ref{prob:rep
 y el Problema~\ref{prob:seleccion} con las restricciones del caso entregado
 (cupo $k$ y presupuesto de participación $C$ simultáneos), en $T$ rondas. El
 caso fija $N=15$, $T=3$, $k=5$, $B=30$, $C=24$ y $P_i=18$. Como el caso no
-define las funciones de utilidad, se adoptaron las siguientes, que cumplen el
-Supuesto~\ref{sup:modelo}:
-\[
-  u_i(x)=a_i\ln(1+x),
-  \qquad
-  f(S)=\sum_{j\in V}a_j\Bigl(1-\prod_{i\in S}(1-w_{ij})\Bigr),\quad w_{jj}=1,
-\]
-donde $a_i$ es el coeficiente de utilidad del nodo $i$ y $w_{ij}$ el peso de
-influencia del grafo (simétrico). La función $u_i$ es creciente y cóncava con
-$u_i(0)=0$; $f$ es monótona y submodular (cobertura probabilística ponderada).
+define las funciones de utilidad, se adoptaron las del
+Supuesto~\ref{sup:explicito}, con $a_i$ el coeficiente de utilidad del nodo $i$,
+$J=V$ (por lo que $m=N$), $\beta_j=a_j$ y $w_{ij}$ el peso de influencia del
+grafo (simétrico), con $w_{jj}=1$. Sus propiedades se demuestran en la
+Proposición~\ref{prop:propiedades}.
 En cada ronda, la solución base elige $S_t$ con el voraz (el mejor entre el
 voraz por ganancia marginal y el voraz por razón ganancia/costo, sujetos a
 $|S_t|\le k$ y $\sum_{i\in S_t}c_i\le C$), reparte $B$ unidades con el voraz de
@@ -404,7 +436,8 @@ exacto que reporta el código es solo referencial.
 
 \textbf{Entrada.} Un entero $N\in\N$, un costo $c_i>0$ para cada $i\in V$, un
 presupuesto de participación $C\in\Z_{\ge0}$ y una función de conjunto
-$f:2^V\to\R_{\ge0}$ monótona y submodular, accesible por oráculo.
+$f:2^V\to\R_{\ge0}$ monótona y submodular, definida según el
+Supuesto~\ref{sup:explicito}.
 
 \textbf{Salida.} Un subconjunto $S\subseteq V$.
 
@@ -725,9 +758,9 @@ $\max_\pi\mathbb{E}\bigl[\sum_t f_t(S_t)+\sum_{i\in S_t}u_i^t(x_i^t,x_{N(i)}^t)\
   discreto y se asigna en unidades enteras. Si el presupuesto fuera continuo,
   el algoritmo voraz cambiaría por un esquema de reparto por umbrales y la
   función de eficiencia sería distinta.
-  \item \textbf{Representación de las utilidades.} Se adopta el modelo de
-  oráculo del Supuesto~\ref{sup:oraculo}. Si el curso exige una representación
-  explícita, el tamaño de la entrada y la complejidad deben ajustarse según la
+  \item \textbf{Representación de las utilidades.} Se adopta la definición
+  explícita del Supuesto~\ref{sup:explicito}. Si la profesora indicara otras
+  fórmulas, el tamaño de la entrada y la complejidad deben ajustarse según la
   Observación~\ref{obs:representacion}.
   \item \textbf{Momento de los fallos.} Se asume que $A_t$ se observa antes de
   decidir en la ronda $t$. Si los fallos ocurren después, la política debe ser
