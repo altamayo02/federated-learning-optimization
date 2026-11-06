@@ -25,6 +25,8 @@
 
 \theoremstyle{plain}
 \newtheorem{proposicion}[definicion]{Proposición}
+\newtheorem{teorema}[definicion]{Teorema}
+\newtheorem{lema}[definicion]{Lema}
 
 \newcommand{\N}{\mathbb{N}}
 \newcommand{\Z}{\mathbb{Z}}
@@ -46,7 +48,7 @@
 \begin{abstract}
 Este documento formaliza los problemas de \textbf{distribución de presupuesto} y \textbf{selección de participantes} en el contexto del entrenamiento de un modelo de IA de manera federada: diferentes nodos computacionales son propietarios de datos, los cuales contribuyen simultáneamente al entrenamiento del modelo. El matiz del problema a tratar surge cuando se considera la \textbf{privacidad de los datos} utilizados para el entrenamiento; con el fin de procurar su preservación, se añade ruido a los datos, el cual implica una \textbf{delegación de presupuesto} a cada nodo de tal manera que los datos en general se mantengan útiles para el aprendizaje.
 
-Se definen matemáticamente los problemas de \textbf{distribución óptima del presupuesto de introducción de ruido} y la \textbf{selección óptima de nodos participantes} en cada etapa de entrenamiento, además de algunas variantes para ambos. Cada algoritmo se formaliza con: una \textbf{entrada de datos} y su \textbf{tamaño} correspondiente, una \textbf{salida de datos} y su \textbf{objetivo principal}. El documento no incluye todavía algoritmos ni código, puesto que su propósito es fijar el modelo, la notación y las decisiones de modelado que afectarán el análisis de complejidad posterior.
+Se definen matemáticamente los problemas de \textbf{distribución óptima del presupuesto de introducción de ruido} y la \textbf{selección óptima de nodos participantes} en cada etapa de entrenamiento, además de algunas variantes para ambos. Cada algoritmo se formaliza con: una \textbf{entrada de datos} y su \textbf{tamaño} correspondiente, una \textbf{salida de datos} y su \textbf{objetivo principal}. Además, se demuestra por reducción polinomial desde Cobertura Máxima que la selección de nodos es NP-difícil, y se describe la instancia concreta y la solución base implementada en el repositorio. El análisis de eficiencia de los algoritmos y la validación experimental corresponden a etapas posteriores.
 \end{abstract}
 
 \newpage
@@ -225,6 +227,173 @@ El Problema~\ref{prob:seleccion} no incluye el reparto del presupuesto: una vez
 elegido $S$, la asignación $\{x_i\}_{i\in S}$ se resolvería con el
 Problema~\ref{prob:reparto}. Los dos problemas se combinan en el
 Problema~\ref{prob:integrado}.
+\end{observacion}
+
+%=====================================================================
+\section{NP-dureza de la selección de nodos}
+%=====================================================================
+
+En esta sección se demuestra que el Problema~\ref{prob:seleccion} es
+NP-difícil mediante una reducción polinomial desde Cobertura Máxima
+(\emph{Maximum Coverage}). El Problema~\ref{prob:reparto}, en cambio, se
+resuelve en tiempo polinomial (algoritmo voraz de la etapa correspondiente), de
+modo que la dificultad computacional del proyecto reside en la selección.
+
+\subsection{Versiones de decisión}
+
+\begin{definicion}[Cobertura Máxima, versión de decisión: \textsc{MC}]
+\textbf{Instancia.} Un universo finito $U=\{1,\dots,m\}$, una colección
+$\mathcal{F}=\{F_1,\dots,F_N\}$ de subconjuntos $F_i\subseteq U$, y enteros
+$k$ y $\tau$ con $1\le k\le N$ y $0\le\tau\le m$.
+
+\textbf{Pregunta.} ¿Existe $I\subseteq\{1,\dots,N\}$ con $|I|=k$ tal que
+$\bigl|\bigcup_{i\in I}F_i\bigr|\ge\tau$?
+\end{definicion}
+
+\begin{definicion}[Selección con cupo fijo, versión de decisión: \textsc{SEL}]
+\textbf{Instancia.} Una instancia $(N,k,f)$ del
+Problema~\ref{prob:seleccion}, con $f$ monótona y submodular, más un umbral
+$\tau\in\R_{\ge0}$.
+
+\textbf{Pregunta.} ¿Existe $S\subseteq V$ con $|S|=k$ y $f(S)\ge\tau$?
+\end{definicion}
+
+\begin{lema}[Dureza de \textsc{MC}]\label{lem:mc}
+\textsc{MC} es NP-completo.
+\end{lema}
+
+\begin{proof}
+Pertenece a NP: dado $I$, se calcula $\bigl|\bigcup_{i\in I}F_i\bigr|$ en tiempo
+$O(km)$. Para la dureza se reduce desde Cobertura de Conjuntos
+(\textsc{Set Cover}), NP-completo por Karp (1972): dados $U$, $\mathcal{F}$ y
+$k$, ¿existen $k$ conjuntos de $\mathcal{F}$ cuya unión es $U$? La reducción es
+la identidad sobre $(U,\mathcal{F},k)$ con $\tau=m=|U|$. Una unión de tamaño
+$\ge m$ es exactamente $U$, de modo que las respuestas coinciden. (Si
+\textsc{Set Cover} se formula con \emph{a lo sumo} $k$ conjuntos, se
+completan hasta $k$ conjuntos arbitrarios, lo cual no desmejora la cobertura;
+se supone $k\le N$, pues en otro caso basta tomar toda la colección.)
+\end{proof}
+
+\subsection{La reducción}
+
+\begin{teorema}[NP-dureza de la selección]\label{teo:nphard}
+\textsc{SEL} es NP-completo. En consecuencia, el Problema~\ref{prob:seleccion}
+es NP-difícil.
+\end{teorema}
+
+\begin{proof}
+\textbf{(1) \textsc{SEL}$\in$NP.} El certificado es $S$ con $|S|=k$; se
+verifica $|S|=k$ y se evalúa $f(S)\ge\tau$. En la clase de instancias
+construidas abajo, $f(S)$ se evalúa en tiempo polinomial.
+
+\textbf{(2) Reducción $\textsc{MC}\le_p\textsc{SEL}$.} Dada una instancia
+$(U,\mathcal{F},k,\tau)$ de \textsc{MC}, se construye la instancia de
+\textsc{SEL}:
+\[
+  V=\{1,\dots,N\},\qquad
+  f(S)=\Bigl|\bigcup_{i\in S}F_i\Bigr|\quad(S\subseteq V),\qquad
+  \text{mismo }k,\qquad\text{mismo }\tau .
+\]
+La función $f$ se entrega de forma explícita mediante la matriz de incidencia
+$M\in\{0,1\}^{N\times m}$, con $M_{ij}=1$ si y solo si $j\in F_i$. La
+construcción escribe $Nm$ bits, es decir, tiene costo $O(Nm)$, y $f(S)$ se evalúa
+en $O(|S|\,m)$. El tamaño de la instancia producida es polinomial en el tamaño
+de la original.
+
+\textbf{(3) $f$ cumple las hipótesis del modelo} (Supuesto~\ref{sup:modelo}):
+\begin{itemize}[leftmargin=*]
+  \item \emph{No negatividad:} $f(S)\ge0$ y $f(\emptyset)=0$.
+  \item \emph{Monotonía:} si $A\subseteq B$, entonces
+  $\bigcup_{i\in A}F_i\subseteq\bigcup_{i\in B}F_i$, luego $f(A)\le f(B)$.
+  \item \emph{Submodularidad:} sean $A\subseteq B\subseteq V$ e
+  $i\in V\setminus B$. Se escribe $U_A=\bigcup_{l\in A}F_l$ y
+  $U_B=\bigcup_{l\in B}F_l$, con $U_A\subseteq U_B$. Entonces
+  \[
+    f(A\cup\{i\})-f(A)=|F_i\setminus U_A|
+    \;\ge\;|F_i\setminus U_B|=f(B\cup\{i\})-f(B),
+  \]
+  porque $U_A\subseteq U_B$ implica $F_i\setminus U_B\subseteq F_i\setminus U_A$.
+\end{itemize}
+Por tanto, $(N,k,f)$ es una instancia válida del
+Problema~\ref{prob:seleccion}: la utilidad conjunta ``tamaño de la unión'' es
+un caso particular de función monótona y submodular.
+
+\textbf{(4) Corrección.} Se prueba que la respuesta de \textsc{MC} es sí si y
+solo si la de \textsc{SEL} es sí.
+\begin{itemize}[leftmargin=*]
+  \item[$\Rightarrow$] Si $I$ con $|I|=k$ cumple
+  $\bigl|\bigcup_{i\in I}F_i\bigr|\ge\tau$, entonces $S=I$ cumple $|S|=k$ y
+  $f(S)=\bigl|\bigcup_{i\in S}F_i\bigr|\ge\tau$.
+  \item[$\Leftarrow$] Si $S$ con $|S|=k$ cumple $f(S)\ge\tau$, entonces
+  $I=S$ es una solución de \textsc{MC}.
+\end{itemize}
+Como $1\le k\le N$, ambas versiones exigen exactamente $k$ elementos, y no hay
+diferencia entre ``exactamente $k$'' y ``a lo sumo $k$'': por monotonía,
+cualquier conjunto de menos de $k$ elementos se completa hasta $k$ sin
+disminuir $f$.
+
+De (1)--(4) y el Lema~\ref{lem:mc}, \textsc{SEL} es NP-completo. Si existiera un
+algoritmo polinomial para el Problema~\ref{prob:seleccion}, se resolvería
+\textsc{SEL} calculando $S^\ast$ óptimo y comparando $f(S^\ast)$ con $\tau$; luego
+el problema de optimización es NP-difícil.
+\end{proof}
+
+\subsection{Consecuencias y alcance}
+
+\begin{observacion}[No depende del modelo de oráculo]
+La función $f$ de la reducción se entrega de forma explícita y se evalúa en
+tiempo polinomial. Por tanto, la dificultad no es un artefacto del acceso por
+oráculo del Supuesto~\ref{sup:oraculo}: el problema es NP-difícil incluso con
+$f$ representada explícitamente.
+\end{observacion}
+
+\begin{observacion}[Extensión a la variante con costos y al problema integrado]
+El Problema~\ref{prob:costos} contiene al Problema~\ref{prob:seleccion} como
+caso particular ($c_i=1$ y $C=k$, véase la observación de esa sección), y el
+Problema~\ref{prob:integrado} contiene a ambos (véase su observación sobre
+subproblemas). Como la reducción anterior produce instancias del caso
+particular, ambos problemas son NP-difíciles.
+\end{observacion}
+
+\begin{observacion}[Qué no afirma este resultado]
+El Teorema~\ref{teo:nphard} se refiere a la selección. El
+Problema~\ref{prob:reparto} es distinto: su algoritmo voraz es exacto y de
+costo $O(B\log N)$. Además, la NP-dureza no impide aproximar: para $f$ monótona
+y submodular, el voraz garantiza $(1-1/e)f(S^\ast)$ (Nemhauser, Wolsey y
+Fisher, 1978), resultado que se aplica en la etapa del algoritmo aproximado.
+\end{observacion}
+
+%=====================================================================
+\section{Instancia concreta y solución base (caso G2)}
+%=====================================================================
+
+El repositorio incluye una solución base que resuelve el Problema~\ref{prob:reparto}
+y el Problema~\ref{prob:seleccion} con las restricciones del caso entregado
+(cupo $k$ y presupuesto de participación $C$ simultáneos), en $T$ rondas. El
+caso fija $N=15$, $T=3$, $k=5$, $B=30$, $C=24$ y $P_i=18$. Como el caso no
+define las funciones de utilidad, se adoptaron las siguientes, que cumplen el
+Supuesto~\ref{sup:modelo}:
+\[
+  u_i(x)=a_i\ln(1+x),
+  \qquad
+  f(S)=\sum_{j\in V}a_j\Bigl(1-\prod_{i\in S}(1-w_{ij})\Bigr),\quad w_{jj}=1,
+\]
+donde $a_i$ es el coeficiente de utilidad del nodo $i$ y $w_{ij}$ el peso de
+influencia del grafo (simétrico). La función $u_i$ es creciente y cóncava con
+$u_i(0)=0$; $f$ es monótona y submodular (cobertura probabilística ponderada).
+En cada ronda, la solución base elige $S_t$ con el voraz (el mejor entre el
+voraz por ganancia marginal y el voraz por razón ganancia/costo, sujetos a
+$|S_t|\le k$ y $\sum_{i\in S_t}c_i\le C$), reparte $B$ unidades con el voraz de
+montículo respetando el tope restante $P_i-\sum_{s<t}x_i^s$, y verifica todas las
+restricciones. Los detalles de ejecución, formatos y limitaciones se
+encuentran en \texttt{doc/Manual\_tecnico.md}.
+
+\begin{observacion}[Alcance de la solución base]
+No se modelan fallos de nodos (el caso no trae probabilidades $q_i$), y las
+interacciones de red intervienen en la selección a través de $f$ pero no en el
+reparto. Con costos de participación distintos, la cota $(1-1/e)$ no aplica
+directamente (véase la Variante~\ref{prob:costos}); la comparación con el óptimo
+exacto que reporta el código es solo referencial.
 \end{observacion}
 
 %=====================================================================
@@ -587,6 +756,8 @@ $\max_\pi\mathbb{E}\bigl[\sum_t f_t(S_t)+\sum_{i\in S_t}u_i^t(x_i^t,x_{N(i)}^t)\
   \item Se distingue entre los problemas base y las tres variantes obligatorias.
   \item Se explicita el modelo de acceso a las utilidades y a la función de
   conjunto.
+  \item Se demuestra la NP-dureza de la selección por reducción polinomial
+  desde Cobertura Máxima (Teorema~\ref{teo:nphard}).
   \item Se dejan identificadas las decisiones de modelado que afectan el
   análisis de complejidad y las cotas de aproximación.
 \end{itemize}
