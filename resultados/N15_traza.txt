@@ -1,4 +1,4 @@
-=== Caso: entrada_G2_red_15_nodos | tiempo: 0.000947 s | utilidad total: 699.477241 ===
+=== Caso: N15 | tiempo: 0.000987 s | utilidad total: 699.477241 ===
 
 -- Ronda 1 (selección: voraz por 'ganancia') --
 Nodos: N11, N14, N09, N15, N13   f(S)=145.5795

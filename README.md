@@ -7,7 +7,7 @@ Elige los nodos participantes de cada ronda con un voraz submodular y reparte el
 
 ### Ejecución
 ```bash
-python3 src/red.py entrada_G2_red_15_nodos.json          # genera resultados/ y muestra la traza
+python3 src/red.py data/N15.json          # genera resultados/ y muestra la traza
 python3 src/red.py caso1.json caso2.json -o resultados   # varios casos
 python3 src/red.py caso.json --sin-exacto                # omite la verificación por fuerza bruta
 python3 tests/test_red.py                                # pruebas

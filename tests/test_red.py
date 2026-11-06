@@ -2,7 +2,7 @@ import itertools, json, math, os, sys, unittest
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 import red
 
-RUTA = os.path.join(os.path.dirname(__file__), "..", "entrada_G2_red_15_nodos.json")
+RUTA = os.path.join(os.path.dirname(__file__), "..", "data", "N15.json")
 
 
 class T(unittest.TestCase):

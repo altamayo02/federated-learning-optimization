@@ -21,7 +21,7 @@ El manual acompaña al informe (`doc/Formalización.tex`), al código (`src/red.
 ---
 
 ## 1. Propósito y alcance
-La solución base resuelve las dos partes del problema para el caso de la profesora (`entrada_G2_red_15_nodos.json`):
+La solución base resuelve las dos partes del problema para el caso de la profesora (`data/N15.json`):
 
 - **Parte 1, reparto del presupuesto de ruido:** dados los nodos ya elegidos y un presupuesto B, repartirlo para maximizar Σ u_i(x_i).
 - **Parte 2, selección de participantes:** elegir en cada ronda el subconjunto de nodos que maximiza una utilidad conjunta submodular, con un cupo k y un presupuesto de costos de participación C.
@@ -170,7 +170,7 @@ Notación: N nodos, k cupo, B presupuesto de ruido por ronda, T rondas.
 ```
 src/red.py            solución base (un solo módulo, sin dependencias)
 tests/test_red.py     pruebas automáticas
-entrada_G2_red_15_nodos.json   caso de la profesora
+data/N15.json         caso de la profesora
 resultados/           resultado.json y traza.txt por caso
 doc/                  informe (.tex) y este manual
 ```
@@ -225,7 +225,7 @@ Requisitos: Python 3.8 o superior (probado en 3.14). No hay que instalar nada (`
 
 ```bash
 git clone <repositorio> && cd federated-learning-optimization
-python3 src/red.py entrada_G2_red_15_nodos.json      # un caso
+python3 src/red.py data/N15.json      # un caso
 python3 src/red.py caso1.json caso2.json -o salida   # varios casos, otra carpeta
 python3 src/red.py caso.json --sin-exacto            # sin fuerza bruta (instancias grandes)
 python3 tests/test_red.py                            # pruebas
@@ -251,7 +251,7 @@ Las ganancias decrecen paso a paso, como corresponde a una función submodular. 
 
 **Efecto del presupuesto total.** Tras la ronda 1, N09 y N14 conservan 11 unidades de 18, y tras la ronda 2 conservan 4. En la ronda 3 solo pueden recibir 4, así que el reparto cambia a N11 = 8, N14 = 4, N09 = 4, N15 = 6, N13 = 8 (utilidad 85,611, menor que en las rondas anteriores porque los topes obligan a mover unidades a nodos de menor ganancia). Al terminar, los cinco nodos elegidos quedan con 0 de presupuesto.
 
-**Utilidad total del caso:** 699,477 en 0,0009 s.
+**Utilidad total del caso:** 699,477 en 0,001 s.
 
 ## 11. Validación realizada
 1. **Verificaciones en cada ejecución** (salen en la traza): |S| ≤ k, Σ c_i ≤ C, Σ x_i ≤ B, x_i ≤ presupuesto restante y, como referencia, f(S_voraz) ≥ (1 − 1/e)·f(S_opt). Todas dan OK en las tres rondas.
