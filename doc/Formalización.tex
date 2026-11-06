@@ -123,8 +123,7 @@ $|E|$. Los parámetros numéricos se mantienen fijos o se reportan aparte.
 
 \subsection{Definición explícita de las funciones}
 
-\begin{supuesto}[Definición explícita de $u_i$ y $f$]\label{sup:explicito}
-Las funciones del modelo se dan por fórmula y no por oráculo:
+\begin{definicion}\label{sup:explicito} Definición explícita de $u_i$ y $f$
 \begin{enumerate}[leftmargin=*,label=(\alph*)]
   \item \emph{Utilidad de reparto.} Para cada nodo $i$ se da un coeficiente
   $a_i\ge0$ y
@@ -148,7 +147,7 @@ $\mu_S(j)=\prod_{i\in S}(1-w_{ij})$, la ganancia marginal
 $f(S\cup\{i\})-f(S)=\sum_{j\in J}\beta_j\,\mu_S(j)\,w_{ij}$ se evalúa en
 $O(m)$ y $\mu$ se actualiza en $O(m)$ al agregar un nodo. Estos costos se
 contabilizan en las funciones de eficiencia.
-\end{supuesto}
+\end{definicion}
 
 \begin{proposicion}[Propiedades de $u_i$ y $f$]\label{prop:propiedades}
 Bajo el Supuesto~\ref{sup:explicito}: (i) $u_i$ es creciente y cóncava en
