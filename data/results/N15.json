@@ -1,6 +1,6 @@
 {
   "caso": "N15",
-  "tiempo_segundos": 0.0009872731752693653,
+  "tiempo_segundos": 0.001055699998687487,
   "utilidad_total": 699.4772410650498,
   "rondas": [
     {
@@ -232,17 +232,17 @@
         {
           "unidad": 20,
           "nodo": "N14",
-          "ganancia_marginal": 1.8414477236189415
+          "ganancia_marginal": 1.841447723618942
         },
         {
           "unidad": 21,
           "nodo": "N09",
-          "ganancia_marginal": 1.804983412260151
+          "ganancia_marginal": 1.8049834122601511
         },
         {
           "unidad": 22,
           "nodo": "N15",
-          "ganancia_marginal": 1.7320547895425689
+          "ganancia_marginal": 1.732054789542569
         },
         {
           "unidad": 23,
@@ -252,27 +252,27 @@
         {
           "unidad": 24,
           "nodo": "N14",
-          "ganancia_marginal": 1.5569218662553088
+          "ganancia_marginal": 1.5569218662553086
         },
         {
           "unidad": 25,
           "nodo": "N09",
-          "ganancia_marginal": 1.5260917302898573
+          "ganancia_marginal": 1.526091730289857
         },
         {
           "unidad": 26,
           "nodo": "N13",
-          "ganancia_marginal": 1.5132689213898234
+          "ganancia_marginal": 1.5132689213898236
         },
         {
           "unidad": 27,
           "nodo": "N15",
-          "ganancia_marginal": 1.464431458358954
+          "ganancia_marginal": 1.4644314583589537
         },
         {
           "unidad": 28,
           "nodo": "N11",
-          "ganancia_marginal": 1.3856438316340551
+          "ganancia_marginal": 1.3856438316340554
         },
         {
           "unidad": 29,
@@ -551,17 +551,17 @@
         {
           "unidad": 20,
           "nodo": "N14",
-          "ganancia_marginal": 1.8414477236189415
+          "ganancia_marginal": 1.841447723618942
         },
         {
           "unidad": 21,
           "nodo": "N09",
-          "ganancia_marginal": 1.804983412260151
+          "ganancia_marginal": 1.8049834122601511
         },
         {
           "unidad": 22,
           "nodo": "N15",
-          "ganancia_marginal": 1.7320547895425689
+          "ganancia_marginal": 1.732054789542569
         },
         {
           "unidad": 23,
@@ -571,27 +571,27 @@
         {
           "unidad": 24,
           "nodo": "N14",
-          "ganancia_marginal": 1.5569218662553088
+          "ganancia_marginal": 1.5569218662553086
         },
         {
           "unidad": 25,
           "nodo": "N09",
-          "ganancia_marginal": 1.5260917302898573
+          "ganancia_marginal": 1.526091730289857
         },
         {
           "unidad": 26,
           "nodo": "N13",
-          "ganancia_marginal": 1.5132689213898234
+          "ganancia_marginal": 1.5132689213898236
         },
         {
           "unidad": 27,
           "nodo": "N15",
-          "ganancia_marginal": 1.464431458358954
+          "ganancia_marginal": 1.4644314583589537
         },
         {
           "unidad": 28,
           "nodo": "N11",
-          "ganancia_marginal": 1.3856438316340551
+          "ganancia_marginal": 1.3856438316340554
         },
         {
           "unidad": 29,
@@ -870,7 +870,7 @@
         {
           "unidad": 20,
           "nodo": "N15",
-          "ganancia_marginal": 1.7320547895425689
+          "ganancia_marginal": 1.732054789542569
         },
         {
           "unidad": 21,
@@ -880,27 +880,27 @@
         {
           "unidad": 22,
           "nodo": "N13",
-          "ganancia_marginal": 1.5132689213898234
+          "ganancia_marginal": 1.5132689213898236
         },
         {
           "unidad": 23,
           "nodo": "N15",
-          "ganancia_marginal": 1.464431458358954
+          "ganancia_marginal": 1.4644314583589537
         },
         {
           "unidad": 24,
           "nodo": "N11",
-          "ganancia_marginal": 1.3856438316340551
+          "ganancia_marginal": 1.3856438316340554
         },
         {
           "unidad": 25,
           "nodo": "N13",
-          "ganancia_marginal": 1.279450642566244
+          "ganancia_marginal": 1.2794506425662437
         },
         {
           "unidad": 26,
           "nodo": "N11",
-          "ganancia_marginal": 1.171545166687163
+          "ganancia_marginal": 1.1715451666871628
         },
         {
           "unidad": 27,

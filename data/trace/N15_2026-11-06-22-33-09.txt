@@ -1,0 +1,49 @@
+=== Caso: N15 | tiempo: 0.001056 s | utilidad total: 699.477241 ===
+
+-- Ronda 1 (selección: voraz por 'ganancia') --
+Nodos: N11, N14, N09, N15, N13   f(S)=145.5795
+  paso 1: +N11 ganancia=103.4900 costo=4
+  paso 2: +N14 ganancia=24.2782 costo=3
+  paso 3: +N09 ganancia=9.9327 costo=3
+  paso 4: +N15 ganancia=5.5306 costo=6
+  paso 5: +N13 ganancia=2.3479 costo=7
+Reparto: N11=5, N14=7, N09=7, N15=6, N13=5   utilidad=88.5640
+  orden de unidades: N14 N09 N15 N13 N11 N14 N09 N15 N13 N11 N14 N09 N15 N13 N14 N09 N11 N15 N13 N14 N09 N15 N11 N14 N09 N13 N15 N11 N14 N09
+Óptimo exacto f*=145.5795 (N09, N11, N13, N14, N15); razón voraz/óptimo=1.0000
+  [OK] |S| <= k (5 <= 5)
+  [OK] sum c_i <= C (23 <= 24)
+  [OK] sum x_i <= B (30 <= 30)
+  [OK] x_i <= presupuesto restante del nodo
+  [OK] f(S_voraz) >= (1-1/e) f(S_opt) (referencial: con costos la cota no aplica)
+
+-- Ronda 2 (selección: voraz por 'ganancia') --
+Nodos: N11, N14, N09, N15, N13   f(S)=145.5795
+  paso 1: +N11 ganancia=103.4900 costo=4
+  paso 2: +N14 ganancia=24.2782 costo=3
+  paso 3: +N09 ganancia=9.9327 costo=3
+  paso 4: +N15 ganancia=5.5306 costo=6
+  paso 5: +N13 ganancia=2.3479 costo=7
+Reparto: N11=5, N14=7, N09=7, N15=6, N13=5   utilidad=88.5640
+  orden de unidades: N14 N09 N15 N13 N11 N14 N09 N15 N13 N11 N14 N09 N15 N13 N14 N09 N11 N15 N13 N14 N09 N15 N11 N14 N09 N13 N15 N11 N14 N09
+Óptimo exacto f*=145.5795 (N09, N11, N13, N14, N15); razón voraz/óptimo=1.0000
+  [OK] |S| <= k (5 <= 5)
+  [OK] sum c_i <= C (23 <= 24)
+  [OK] sum x_i <= B (30 <= 30)
+  [OK] x_i <= presupuesto restante del nodo
+  [OK] f(S_voraz) >= (1-1/e) f(S_opt) (referencial: con costos la cota no aplica)
+
+-- Ronda 3 (selección: voraz por 'ganancia') --
+Nodos: N11, N14, N09, N15, N13   f(S)=145.5795
+  paso 1: +N11 ganancia=103.4900 costo=4
+  paso 2: +N14 ganancia=24.2782 costo=3
+  paso 3: +N09 ganancia=9.9327 costo=3
+  paso 4: +N15 ganancia=5.5306 costo=6
+  paso 5: +N13 ganancia=2.3479 costo=7
+Reparto: N11=8, N14=4, N09=4, N15=6, N13=8   utilidad=85.6108
+  orden de unidades: N14 N09 N15 N13 N11 N14 N09 N15 N13 N11 N14 N09 N15 N13 N14 N09 N11 N15 N13 N15 N11 N13 N15 N11 N13 N11 N13 N11 N13 N11
+Óptimo exacto f*=145.5795 (N09, N11, N13, N14, N15); razón voraz/óptimo=1.0000
+  [OK] |S| <= k (5 <= 5)
+  [OK] sum c_i <= C (23 <= 24)
+  [OK] sum x_i <= B (30 <= 30)
+  [OK] x_i <= presupuesto restante del nodo
+  [OK] f(S_voraz) >= (1-1/e) f(S_opt) (referencial: con costos la cota no aplica)

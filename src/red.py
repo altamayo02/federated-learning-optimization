@@ -201,7 +201,7 @@ def texto(nombre, rondas, util, seg):
 def main():
 		ap = argparse.ArgumentParser(description="Solución base G2 · Red")
 		ap.add_argument("entrada", nargs="+", help="archivo(s) JSON de casos")
-		ap.add_argument("-o", "--salida", default="resultados")
+		ap.add_argument("-o", "--salida", default="data")
 		ap.add_argument("--sin-exacto", action="store_true", help="omite la fuerza bruta de verificación")
 		a = ap.parse_args()
 		os.makedirs(a.salida, exist_ok=True)
@@ -211,7 +211,7 @@ def main():
 						inst = Instancia(json.load(fh))
 				rondas, util, seg = resolver(inst, verificar_exacto=not a.sin_exacto)
 				with open(
-					a.salida / "results" / f"{nombre}.json",
+					a.salida + "/results/" + f"{nombre}.json",
 					"w",
 					encoding="utf-8"
 				) as fh:
@@ -224,7 +224,7 @@ def main():
 				txt = texto(nombre, rondas, util, seg)
 				tstamp = datetime.now(UTC).strftime("%Y-%m-%d-%H-%M-%S")
 				with open(
-					a.salida / "trace" / f"{nombre}_{tstamp}.txt",
+					a.salida + "/trace/" + f"{nombre}_{tstamp}.txt",
 					"w",
 					encoding="utf-8"
 				) as fh:
